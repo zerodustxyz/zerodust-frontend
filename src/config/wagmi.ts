@@ -45,15 +45,16 @@ export const testnetChainIds = [
   97,       // BSC Testnet
 ];
 
-// RPC URLs for each chain (from env or fallback to public)
+// Public RPC URLs for each chain (used only for wallet signing, not balance fetching)
+// Balance fetching goes through the backend API for better reliability and key security
 export const rpcUrls: Record<number, string> = {
-  // Testnets
-  11155111: process.env.NEXT_PUBLIC_RPC_SEPOLIA || 'https://rpc.sepolia.org',
-  84532: process.env.NEXT_PUBLIC_RPC_BASE_SEPOLIA || 'https://sepolia.base.org',
-  11155420: process.env.NEXT_PUBLIC_RPC_OP_SEPOLIA || 'https://sepolia.optimism.io',
-  421614: process.env.NEXT_PUBLIC_RPC_ARB_SEPOLIA || 'https://sepolia-rollup.arbitrum.io/rpc',
-  80002: process.env.NEXT_PUBLIC_RPC_POLYGON_AMOY || 'https://rpc-amoy.polygon.technology',
-  97: process.env.NEXT_PUBLIC_RPC_BSC_TESTNET || 'https://data-seed-prebsc-1-s1.binance.org:8545',
+  // Testnets (public RPCs)
+  11155111: 'https://rpc.sepolia.org',
+  84532: 'https://sepolia.base.org',
+  11155420: 'https://sepolia.optimism.io',
+  421614: 'https://sepolia-rollup.arbitrum.io/rpc',
+  80002: 'https://rpc-amoy.polygon.technology',
+  97: 'https://data-seed-prebsc-1-s1.binance.org:8545',
 };
 
 export const config = getDefaultConfig({
