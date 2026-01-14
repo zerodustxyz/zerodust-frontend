@@ -1,54 +1,76 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAccount, useBalance } from 'wagmi';
-import { formatEther } from 'viem';
-import { Loader2 } from 'lucide-react';
-import { testnetChainIds, chainMeta } from '@/config/wagmi';
+import { useAccount } from 'wagmi';
+import { createPublicClient, http, formatEther } from 'viem';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { testnetChainIds, chainMeta, rpcUrls } from '@/config/wagmi';
 
 interface BalanceListProps {
   selectedChain: number | null;
   onSelectionChange: (chain: number | null) => void;
+  onBalanceChange?: (balance: bigint) => void;
 }
 
 interface ChainBalance {
   chainId: number;
   balance: bigint;
   isLoading: boolean;
+  error: string | null;
 }
 
-export function BalanceList({ selectedChain, onSelectionChange }: BalanceListProps) {
+export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange }: BalanceListProps) {
   const { address } = useAccount();
   const [balances, setBalances] = useState<ChainBalance[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // For demo purposes, we'll show testnet chains
-  // In production, this would fetch from all supported chains
   const chainsToShow = testnetChainIds;
 
-  // Fetch balances for all chains
-  // Note: In a real implementation, you'd use multicall or parallel fetches
-  useEffect(() => {
+  const fetchBalances = async () => {
     if (!address) return;
+
+    setIsRefreshing(true);
 
     // Initialize with loading state
     setBalances(chainsToShow.map(chainId => ({
       chainId,
       balance: 0n,
       isLoading: true,
+      error: null,
     })));
 
-    // Simulate fetching balances (replace with actual RPC calls)
-    const fetchBalances = async () => {
-      // In production, use viem's multicall or batch requests
-      const newBalances = chainsToShow.map(chainId => ({
-        chainId,
-        balance: BigInt(Math.floor(Math.random() * 10000000000000000)), // Mock: 0-0.01 ETH
-        isLoading: false,
-      }));
+    // Fetch balances in parallel for all chains
+    const balancePromises = chainsToShow.map(async (chainId) => {
+      try {
+        const client = createPublicClient({
+          transport: http(rpcUrls[chainId]),
+        });
 
-      setBalances(newBalances);
-    };
+        const balance = await client.getBalance({ address });
 
+        return {
+          chainId,
+          balance,
+          isLoading: false,
+          error: null,
+        };
+      } catch (err) {
+        console.error(`Error fetching balance for chain ${chainId}:`, err);
+        return {
+          chainId,
+          balance: 0n,
+          isLoading: false,
+          error: 'Failed to fetch',
+        };
+      }
+    });
+
+    const results = await Promise.all(balancePromises);
+    setBalances(results);
+    setIsRefreshing(false);
+  };
+
+  useEffect(() => {
     fetchBalances();
   }, [address]);
 
@@ -56,26 +78,42 @@ export function BalanceList({ selectedChain, onSelectionChange }: BalanceListPro
     // Toggle: if already selected, deselect; otherwise select
     if (selectedChain === chainId) {
       onSelectionChange(null);
+      onBalanceChange?.(0n);
     } else {
+      const balance = balances.find(b => b.chainId === chainId)?.balance || 0n;
       onSelectionChange(chainId);
+      onBalanceChange?.(balance);
     }
   };
 
   const selectedBalance = balances.find(b => b.chainId === selectedChain)?.balance || 0n;
+  const isLoading = balances.some(b => b.isLoading);
 
   return (
     <div className="space-y-4">
+      {/* Refresh button */}
+      <div className="flex justify-end">
+        <button
+          onClick={fetchBalances}
+          disabled={isRefreshing}
+          className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 flex items-center gap-1 transition-colors"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
       {/* Chain list */}
       <div className="space-y-2">
-        {balances.map(({ chainId, balance, isLoading }) => {
-          const meta = chainMeta[chainId] || { name: `Chain ${chainId}`, color: '#888' };
+        {balances.map(({ chainId, balance, isLoading, error }) => {
+          const meta = chainMeta[chainId] || { name: `Chain ${chainId}`, color: '#888', symbol: 'ETH' };
           const isSelected = selectedChain === chainId;
           const hasBalance = balance > 0n;
 
           return (
             <button
               key={chainId}
-              onClick={() => hasBalance && selectChain(chainId)}
+              onClick={() => hasBalance && !isLoading && selectChain(chainId)}
               disabled={!hasBalance || isLoading}
               className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
                 isSelected
@@ -107,14 +145,16 @@ export function BalanceList({ selectedChain, onSelectionChange }: BalanceListPro
               <div className="text-right">
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                ) : error ? (
+                  <span className="text-xs text-red-500">{error}</span>
                 ) : (
                   <>
                     <div className="font-mono text-sm">
-                      {Number(formatEther(balance)).toFixed(6)} ETH
+                      {Number(formatEther(balance)).toFixed(6)} {meta.symbol}
                     </div>
-                    <div className="text-xs text-zinc-500">
-                      ~${(Number(formatEther(balance)) * 3500).toFixed(2)}
-                    </div>
+                    {balance === 0n && (
+                      <div className="text-xs text-zinc-500">No balance</div>
+                    )}
                   </>
                 )}
               </div>
@@ -130,13 +170,17 @@ export function BalanceList({ selectedChain, onSelectionChange }: BalanceListPro
             <span className="text-zinc-600 dark:text-zinc-400">Amount to Sweep</span>
             <div className="text-right">
               <div className="font-mono font-semibold">
-                {Number(formatEther(selectedBalance)).toFixed(6)} ETH
-              </div>
-              <div className="text-sm text-zinc-500">
-                ~${(Number(formatEther(selectedBalance)) * 3500).toFixed(2)}
+                {Number(formatEther(selectedBalance)).toFixed(6)} {chainMeta[selectedChain]?.symbol || 'ETH'}
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* No balances message */}
+      {!isLoading && balances.every(b => b.balance === 0n) && (
+        <div className="text-center py-4 text-sm text-zinc-500">
+          No balances found on testnet chains. Fund a testnet wallet to test sweeping.
         </div>
       )}
     </div>
