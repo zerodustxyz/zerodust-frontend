@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Check, X, ExternalLink } from 'lucide-react';
+import { chainMeta } from '@/config/wagmi';
 
 interface SweepButtonProps {
-  selectedChains: number[];
-  destinationChainId: number;
+  selectedChain: number | null;
   destinationAddress: string;
   disabled?: boolean;
 }
@@ -14,16 +14,17 @@ interface SweepButtonProps {
 type SweepStatus = 'idle' | 'confirming' | 'sweeping' | 'success' | 'error';
 
 export function SweepButton({
-  selectedChains,
-  destinationChainId,
+  selectedChain,
   destinationAddress,
   disabled,
 }: SweepButtonProps) {
   const [status, setStatus] = useState<SweepStatus>('idle');
   const [error, setError] = useState<string | null>(null);
 
+  const chainInfo = selectedChain ? chainMeta[selectedChain] : null;
+
   const handleSweep = async () => {
-    if (disabled) return;
+    if (disabled || !selectedChain) return;
 
     try {
       setStatus('confirming');
@@ -73,9 +74,7 @@ export function SweepButton({
         }`}
       >
         {status === 'idle' && (
-          <>
-            Sweep {selectedChains.length} Chain{selectedChains.length !== 1 ? 's' : ''} to Destination
-          </>
+          <>Sweep {chainInfo?.name || 'Chain'}</>
         )}
         {status === 'confirming' && (
           <span className="flex items-center justify-center gap-2">
@@ -105,7 +104,7 @@ export function SweepButton({
 
       {/* Status modal */}
       <AnimatePresence>
-        {(status === 'sweeping' || status === 'success') && (
+        {(status === 'sweeping' || status === 'success') && chainInfo && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -117,25 +116,27 @@ export function SweepButton({
             </h4>
 
             {/* Chain progress */}
-            <div className="space-y-2">
-              {selectedChains.map((chainId, index) => (
-                <div key={chainId} className="flex items-center justify-between text-sm">
-                  <span>Chain {chainId}</span>
-                  <span className="flex items-center gap-2">
-                    {status === 'success' || index < selectedChains.length - 1 ? (
-                      <>
-                        <Check className="w-4 h-4 text-green-500" />
-                        <span className="text-green-500">Complete</span>
-                      </>
-                    ) : (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin text-brand-purple" />
-                        <span className="text-brand-purple">Processing</span>
-                      </>
-                    )}
-                  </span>
-                </div>
-              ))}
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: chainInfo.color }}
+                />
+                <span>{chainInfo.name}</span>
+              </div>
+              <span className="flex items-center gap-2">
+                {status === 'success' ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-500" />
+                    <span className="text-green-500">Complete</span>
+                  </>
+                ) : (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-brand-purple" />
+                    <span className="text-brand-purple">Processing</span>
+                  </>
+                )}
+              </span>
             </div>
 
             {status === 'success' && (
@@ -168,9 +169,9 @@ export function SweepButton({
       )}
 
       {/* Disabled message */}
-      {disabled && selectedChains.length === 0 && (
+      {disabled && selectedChain === null && (
         <p className="text-center text-sm text-zinc-500">
-          Select at least one chain to sweep
+          Select a chain to sweep
         </p>
       )}
     </div>

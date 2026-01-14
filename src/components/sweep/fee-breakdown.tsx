@@ -1,35 +1,32 @@
 'use client';
 
 import { useMemo } from 'react';
-import { formatEther } from 'viem';
 import { Info } from 'lucide-react';
 import { chainMeta } from '@/config/wagmi';
 
 interface FeeBreakdownProps {
-  selectedChains: number[];
-  destinationChainId: number;
+  selectedChain: number;
 }
 
-export function FeeBreakdown({ selectedChains, destinationChainId }: FeeBreakdownProps) {
+export function FeeBreakdown({ selectedChain }: FeeBreakdownProps) {
+  const chainInfo = chainMeta[selectedChain] || { name: 'Unknown', color: '#888' };
+
   // In production, this would fetch actual quotes from the API
   const breakdown = useMemo(() => {
     // Mock fee calculation
-    const gasPerSweep = 0.0002; // ~$0.70 at $3500/ETH
-    const totalGas = gasPerSweep * selectedChains.length;
+    const gasFee = 0.0002; // ~$0.70 at $3500/ETH
 
     // Mock total balance (would come from actual balances)
     const mockTotalBalance = 0.025;
-    const youReceive = mockTotalBalance - totalGas;
+    const youReceive = mockTotalBalance - gasFee;
 
     return {
       totalBalance: mockTotalBalance,
-      networkFees: totalGas,
+      networkFee: gasFee,
       youReceive: youReceive > 0 ? youReceive : 0,
-      feePercentage: ((totalGas / mockTotalBalance) * 100).toFixed(1),
+      feePercentage: ((gasFee / mockTotalBalance) * 100).toFixed(1),
     };
-  }, [selectedChains]);
-
-  const destinationChain = chainMeta[destinationChainId] || { name: 'Unknown' };
+  }, [selectedChain]);
 
   return (
     <div className="space-y-3">
@@ -40,16 +37,16 @@ export function FeeBreakdown({ selectedChains, destinationChainId }: FeeBreakdow
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-zinc-600 dark:text-zinc-400">Total Balance</span>
+          <span className="text-zinc-600 dark:text-zinc-400">Balance on {chainInfo.name}</span>
           <span className="font-mono">{breakdown.totalBalance.toFixed(6)} ETH</span>
         </div>
 
         <div className="flex justify-between">
           <span className="text-zinc-600 dark:text-zinc-400">
-            Network Fees ({selectedChains.length} sweep{selectedChains.length !== 1 ? 's' : ''})
+            Service Fee (gas + buffer)
           </span>
           <span className="font-mono text-amber-500">
-            -{breakdown.networkFees.toFixed(6)} ETH
+            -{breakdown.networkFee.toFixed(6)} ETH
           </span>
         </div>
 
@@ -61,18 +58,18 @@ export function FeeBreakdown({ selectedChains, destinationChainId }: FeeBreakdow
                 {breakdown.youReceive.toFixed(6)} ETH
               </div>
               <div className="text-xs text-zinc-500">
-                ~${(breakdown.youReceive * 3500).toFixed(2)} on {destinationChain.name}
+                ~${(breakdown.youReceive * 3500).toFixed(2)}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Fee percentage notice */}
+      {/* Fee notice */}
       <div className="p-3 bg-brand-purple/10 rounded-lg">
         <p className="text-xs text-zinc-600 dark:text-zinc-400">
-          <span className="font-medium text-brand-purple">{breakdown.feePercentage}%</span> of your total balance goes to network fees.
-          You keep the rest, and your source wallets will have exactly 0 balance.
+          <span className="font-medium text-brand-purple">{breakdown.feePercentage}%</span> of your balance covers the service fee.
+          Your source wallet will have exactly 0 balance after sweeping.
         </p>
       </div>
     </div>
