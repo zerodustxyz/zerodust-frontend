@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useAccount, useBalance } from 'wagmi';
 import { formatEther } from 'viem';
-import { Check, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { testnetChainIds, chainMeta } from '@/config/wagmi';
 
 interface BalanceListProps {
-  selectedChains: number[];
-  onSelectionChange: (chains: number[]) => void;
+  selectedChain: number | null;
+  onSelectionChange: (chain: number | null) => void;
 }
 
 interface ChainBalance {
@@ -17,7 +17,7 @@ interface ChainBalance {
   isLoading: boolean;
 }
 
-export function BalanceList({ selectedChains, onSelectionChange }: BalanceListProps) {
+export function BalanceList({ selectedChain, onSelectionChange }: BalanceListProps) {
   const { address } = useAccount();
   const [balances, setBalances] = useState<ChainBalance[]>([]);
 
@@ -52,51 +52,30 @@ export function BalanceList({ selectedChains, onSelectionChange }: BalanceListPr
     fetchBalances();
   }, [address]);
 
-  const toggleChain = (chainId: number) => {
-    if (selectedChains.includes(chainId)) {
-      onSelectionChange(selectedChains.filter(id => id !== chainId));
+  const selectChain = (chainId: number) => {
+    // Toggle: if already selected, deselect; otherwise select
+    if (selectedChain === chainId) {
+      onSelectionChange(null);
     } else {
-      onSelectionChange([...selectedChains, chainId]);
+      onSelectionChange(chainId);
     }
   };
 
-  const selectAll = () => {
-    const chainsWithBalance = balances
-      .filter(b => b.balance > 0n)
-      .map(b => b.chainId);
-    onSelectionChange(chainsWithBalance);
-  };
-
-  const totalSelected = balances
-    .filter(b => selectedChains.includes(b.chainId))
-    .reduce((sum, b) => sum + b.balance, 0n);
+  const selectedBalance = balances.find(b => b.chainId === selectedChain)?.balance || 0n;
 
   return (
     <div className="space-y-4">
-      {/* Select all button */}
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-zinc-500">
-          {selectedChains.length} chain{selectedChains.length !== 1 ? 's' : ''} selected
-        </span>
-        <button
-          onClick={selectAll}
-          className="text-sm text-brand-purple hover:text-brand-purple/80 transition-colors"
-        >
-          Select all with balance
-        </button>
-      </div>
-
       {/* Chain list */}
       <div className="space-y-2">
         {balances.map(({ chainId, balance, isLoading }) => {
           const meta = chainMeta[chainId] || { name: `Chain ${chainId}`, color: '#888' };
-          const isSelected = selectedChains.includes(chainId);
+          const isSelected = selectedChain === chainId;
           const hasBalance = balance > 0n;
 
           return (
             <button
               key={chainId}
-              onClick={() => hasBalance && toggleChain(chainId)}
+              onClick={() => hasBalance && selectChain(chainId)}
               disabled={!hasBalance || isLoading}
               className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
                 isSelected
@@ -105,15 +84,15 @@ export function BalanceList({ selectedChains, onSelectionChange }: BalanceListPr
               } ${!hasBalance && !isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center gap-3">
-                {/* Checkbox */}
+                {/* Radio button */}
                 <div
-                  className={`w-5 h-5 rounded flex items-center justify-center ${
+                  className={`w-5 h-5 rounded-full flex items-center justify-center border-2 ${
                     isSelected
-                      ? 'bg-brand-purple'
-                      : 'border-2 border-zinc-300 dark:border-zinc-600'
+                      ? 'border-brand-purple'
+                      : 'border-zinc-300 dark:border-zinc-600'
                   }`}
                 >
-                  {isSelected && <Check className="w-3 h-3 text-white" />}
+                  {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-brand-purple" />}
                 </div>
 
                 {/* Chain info */}
@@ -144,17 +123,17 @@ export function BalanceList({ selectedChains, onSelectionChange }: BalanceListPr
         })}
       </div>
 
-      {/* Total */}
-      {selectedChains.length > 0 && (
+      {/* Selected balance */}
+      {selectedChain !== null && (
         <div className="pt-4 border-t border-light-border dark:border-dark-border">
           <div className="flex justify-between items-center">
-            <span className="text-zinc-600 dark:text-zinc-400">Total Selected</span>
+            <span className="text-zinc-600 dark:text-zinc-400">Amount to Sweep</span>
             <div className="text-right">
               <div className="font-mono font-semibold">
-                {Number(formatEther(totalSelected)).toFixed(6)} ETH
+                {Number(formatEther(selectedBalance)).toFixed(6)} ETH
               </div>
               <div className="text-sm text-zinc-500">
-                ~${(Number(formatEther(totalSelected)) * 3500).toFixed(2)}
+                ~${(Number(formatEther(selectedBalance)) * 3500).toFixed(2)}
               </div>
             </div>
           </div>

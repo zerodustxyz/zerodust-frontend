@@ -11,8 +11,7 @@ import { FeeBreakdown } from '@/components/sweep/fee-breakdown';
 
 export default function AppPage() {
   const { isConnected, address } = useAccount();
-  const [selectedChains, setSelectedChains] = useState<number[]>([]);
-  const [destinationChainId, setDestinationChainId] = useState<number>(8453); // Default to Base
+  const [selectedChain, setSelectedChain] = useState<number | null>(null);
   const [destinationAddress, setDestinationAddress] = useState<string>('');
 
   // Use connected address as default destination
@@ -46,53 +45,50 @@ export default function AppPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">
-            Sweep Your Dust
+            Sweep Your Balance
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
-            Select chains to sweep and choose your destination
+            Select a chain and enter destination address
           </p>
         </div>
 
         {/* Balance List */}
         <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold mb-4">Your Balances</h2>
+          <h2 className="text-lg font-semibold mb-4">Select Chain</h2>
           <BalanceList
-            selectedChains={selectedChains}
-            onSelectionChange={setSelectedChains}
+            selectedChain={selectedChain}
+            onSelectionChange={setSelectedChain}
           />
         </div>
 
         {/* Destination */}
         <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold mb-4">Destination</h2>
+          <h2 className="text-lg font-semibold mb-4">Destination Address</h2>
           <DestinationForm
-            chainId={destinationChainId}
-            onChainChange={setDestinationChainId}
+            chainId={selectedChain}
             address={effectiveDestination}
             onAddressChange={setDestinationAddress}
           />
         </div>
 
         {/* Fee Breakdown */}
-        {selectedChains.length > 0 && (
+        {selectedChain !== null && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             className="glass-card p-6"
           >
             <FeeBreakdown
-              selectedChains={selectedChains}
-              destinationChainId={destinationChainId}
+              selectedChain={selectedChain}
             />
           </motion.div>
         )}
 
         {/* Sweep Button */}
         <SweepButton
-          selectedChains={selectedChains}
-          destinationChainId={destinationChainId}
+          selectedChain={selectedChain}
           destinationAddress={effectiveDestination}
-          disabled={selectedChains.length === 0 || !effectiveDestination}
+          disabled={selectedChain === null || !effectiveDestination}
         />
       </motion.div>
     </div>
