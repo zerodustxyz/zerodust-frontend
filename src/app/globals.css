@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 250 250 250;
+    --foreground: 24 24 27;
+    --card: 255 255 255;
+    --card-foreground: 24 24 27;
+    --primary: 139 92 246;
+    --primary-foreground: 255 255 255;
+    --secondary: 6 182 212;
+    --muted: 161 161 170;
+    --border: 228 228 231;
+  }
+
+  .dark {
+    --background: 10 10 11;
+    --foreground: 250 250 250;
+    --card: 20 20 22;
+    --card-foreground: 250 250 250;
+    --primary: 139 92 246;
+    --primary-foreground: 255 255 255;
+    --secondary: 6 182 212;
+    --muted: 113 113 122;
+    --border: 39 39 42;
+  }
+
+  * {
+    border-color: rgb(228 228 231);
+  }
+
+  .dark * {
+    border-color: rgb(39 39 42);
+  }
+
+  body {
+    @apply bg-light-bg text-zinc-900 dark:bg-dark-bg dark:text-zinc-100;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 dark:bg-dark-card/80 backdrop-blur-xl border border-light-border dark:border-dark-border rounded-2xl;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-brand bg-clip-text text-transparent;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-brand hover:bg-gradient-brand-hover text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-glow;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border border-brand-purple text-brand-purple hover:bg-brand-purple/10 font-semibold py-3 px-6 rounded-xl transition-all duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-light-elevated dark:bg-dark-elevated border border-light-border dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-purple/50 transition-all;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* RainbowKit customization */
+[data-rk] {
+  --rk-colors-accentColor: #8B5CF6;
+  --rk-colors-accentColorForeground: white;
+  --rk-radii-modal: 1rem;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-300 dark:bg-zinc-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-zinc-400 dark:bg-zinc-600;
+}
