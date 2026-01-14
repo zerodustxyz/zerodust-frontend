@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
@@ -9,6 +9,7 @@ import { BalanceList } from '@/components/sweep/balance-list';
 import { DestinationForm } from '@/components/sweep/destination-form';
 import { SweepButton } from '@/components/sweep/sweep-button';
 import { FeeBreakdown } from '@/components/sweep/fee-breakdown';
+import { QuoteResponse } from '@/services/api';
 
 const steps = [
   {
@@ -45,9 +46,17 @@ const testnetChains = [
 export default function Home() {
   const { isConnected, address } = useAccount();
   const [selectedChain, setSelectedChain] = useState<number | null>(null);
+  const [selectedBalance, setSelectedBalance] = useState<bigint>(0n);
   const [destinationAddress, setDestinationAddress] = useState<string>('');
+  const [quote, setQuote] = useState<QuoteResponse | null>(null);
 
   const effectiveDestination = destinationAddress || address || '';
+
+  const handleChainSelect = useCallback((chainId: number | null, balance?: bigint) => {
+    setSelectedChain(chainId);
+    setSelectedBalance(balance || 0n);
+    setQuote(null); // Reset quote when chain changes
+  }, []);
 
   return (
     <div className="relative">
@@ -109,7 +118,8 @@ export default function Home() {
                 <h2 className="text-base font-semibold mb-3">Select Chain</h2>
                 <BalanceList
                   selectedChain={selectedChain}
-                  onSelectionChange={setSelectedChain}
+                  onSelectionChange={handleChainSelect}
+                  onBalanceChange={setSelectedBalance}
                 />
               </div>
 
@@ -124,13 +134,18 @@ export default function Home() {
               </div>
 
               {/* Fee Breakdown */}
-              {selectedChain !== null && (
+              {selectedChain !== null && selectedBalance > 0n && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   className="glass-card p-5"
                 >
-                  <FeeBreakdown selectedChain={selectedChain} />
+                  <FeeBreakdown
+                    selectedChain={selectedChain}
+                    balance={selectedBalance}
+                    destinationAddress={effectiveDestination}
+                    onQuoteChange={setQuote}
+                  />
                 </motion.div>
               )}
 
@@ -138,7 +153,8 @@ export default function Home() {
               <SweepButton
                 selectedChain={selectedChain}
                 destinationAddress={effectiveDestination}
-                disabled={selectedChain === null || !effectiveDestination}
+                quote={quote}
+                disabled={selectedChain === null || !effectiveDestination || !quote}
               />
             </motion.div>
           )}

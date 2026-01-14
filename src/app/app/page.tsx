@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -8,14 +8,21 @@ import { BalanceList } from '@/components/sweep/balance-list';
 import { DestinationForm } from '@/components/sweep/destination-form';
 import { SweepButton } from '@/components/sweep/sweep-button';
 import { FeeBreakdown } from '@/components/sweep/fee-breakdown';
+import { QuoteResponse } from '@/services/api';
 
 export default function AppPage() {
   const { isConnected, address } = useAccount();
   const [selectedChain, setSelectedChain] = useState<number | null>(null);
+  const [selectedBalance, setSelectedBalance] = useState<bigint>(0n);
   const [destinationAddress, setDestinationAddress] = useState<string>('');
+  const [quote, setQuote] = useState<QuoteResponse | null>(null);
 
-  // Use connected address as default destination
   const effectiveDestination = destinationAddress || address || '';
+
+  const handleChainSelect = useCallback((chainId: number | null) => {
+    setSelectedChain(chainId);
+    setQuote(null);
+  }, []);
 
   if (!isConnected) {
     return (
@@ -27,7 +34,7 @@ export default function AppPage() {
         >
           <h1 className="text-2xl font-bold mb-4">Connect Your Wallet</h1>
           <p className="text-zinc-600 dark:text-zinc-400 mb-6">
-            Connect your wallet to view balances and start sweeping dust.
+            Connect your wallet to view balances and start sweeping.
           </p>
           <ConnectButton />
         </motion.div>
@@ -40,30 +47,31 @@ export default function AppPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto space-y-6"
+        className="max-w-xl mx-auto space-y-4"
       >
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">
             Sweep Your Balance
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm">
             Select a chain and enter destination address
           </p>
         </div>
 
         {/* Balance List */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold mb-4">Select Chain</h2>
+        <div className="glass-card p-5">
+          <h2 className="text-base font-semibold mb-3">Select Chain</h2>
           <BalanceList
             selectedChain={selectedChain}
-            onSelectionChange={setSelectedChain}
+            onSelectionChange={handleChainSelect}
+            onBalanceChange={setSelectedBalance}
           />
         </div>
 
         {/* Destination */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold mb-4">Destination Address</h2>
+        <div className="glass-card p-5">
+          <h2 className="text-base font-semibold mb-3">Destination Address</h2>
           <DestinationForm
             chainId={selectedChain}
             address={effectiveDestination}
@@ -72,14 +80,17 @@ export default function AppPage() {
         </div>
 
         {/* Fee Breakdown */}
-        {selectedChain !== null && (
+        {selectedChain !== null && selectedBalance > 0n && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="glass-card p-6"
+            className="glass-card p-5"
           >
             <FeeBreakdown
               selectedChain={selectedChain}
+              balance={selectedBalance}
+              destinationAddress={effectiveDestination}
+              onQuoteChange={setQuote}
             />
           </motion.div>
         )}
@@ -88,7 +99,8 @@ export default function AppPage() {
         <SweepButton
           selectedChain={selectedChain}
           destinationAddress={effectiveDestination}
-          disabled={selectedChain === null || !effectiveDestination}
+          quote={quote}
+          disabled={selectedChain === null || !effectiveDestination || !quote}
         />
       </motion.div>
     </div>
