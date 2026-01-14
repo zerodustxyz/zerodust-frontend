@@ -2,6 +2,21 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/v1';
 
+export interface ChainBalance {
+  chainId: number;
+  name: string;
+  nativeToken: string;
+  balance: string;
+  balanceFormatted: string;
+  canSweep: boolean;
+  minBalance: string;
+}
+
+export interface BalancesResponse {
+  address: string;
+  chains: ChainBalance[];
+}
+
 export interface QuoteRequest {
   chainId: number;
   userAddress: string;
@@ -95,6 +110,13 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
 }
 
 export const api = {
+  /**
+   * Get balances for an address across all supported chains
+   */
+  async getBalances(address: string, testnet = true): Promise<BalancesResponse> {
+    return fetchApi<BalancesResponse>(`/balances/${address}?testnet=${testnet}`);
+  },
+
   /**
    * Get a quote for sweeping a wallet
    */

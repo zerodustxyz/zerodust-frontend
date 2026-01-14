@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
-import { createPublicClient, http, formatEther } from 'viem';
+import { formatEther } from 'viem';
 import { Loader2, RefreshCw } from 'lucide-react';
-import { testnetChainIds, chainMeta, rpcUrls } from '@/config/wagmi';
+import { testnetChainIds, chainMeta } from '@/config/wagmi';
+import { api } from '@/services/api';
 
 interface BalanceListProps {
   selectedChain: number | null;
@@ -39,34 +40,33 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange 
       error: null,
     })));
 
-    // Fetch balances in parallel for all chains
-    const balancePromises = chainsToShow.map(async (chainId) => {
-      try {
-        const client = createPublicClient({
-          transport: http(rpcUrls[chainId]),
-        });
+    try {
+      // Fetch balances from backend API
+      const response = await api.getBalances(address, true);
 
-        const balance = await client.getBalance({ address });
-
+      // Map backend response to our ChainBalance format
+      const results = chainsToShow.map(chainId => {
+        const chainBalance = response.chains.find(c => c.chainId === chainId);
         return {
           chainId,
-          balance,
+          balance: chainBalance ? BigInt(chainBalance.balance) : 0n,
           isLoading: false,
           error: null,
         };
-      } catch (err) {
-        console.error(`Error fetching balance for chain ${chainId}:`, err);
-        return {
-          chainId,
-          balance: 0n,
-          isLoading: false,
-          error: 'Failed to fetch',
-        };
-      }
-    });
+      });
 
-    const results = await Promise.all(balancePromises);
-    setBalances(results);
+      setBalances(results);
+    } catch (err) {
+      console.error('Error fetching balances from backend:', err);
+      // Set error state for all chains
+      setBalances(chainsToShow.map(chainId => ({
+        chainId,
+        balance: 0n,
+        isLoading: false,
+        error: 'Failed to fetch',
+      })));
+    }
+
     setIsRefreshing(false);
   };
 
