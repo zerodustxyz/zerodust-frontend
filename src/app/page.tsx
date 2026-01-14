@@ -5,29 +5,22 @@ import { motion } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { ArrowRight, Wallet, MousePointerClick, Send, CheckCircle2 } from 'lucide-react';
-import { Logo } from '@/components/ui/logo';
-
-const stats = [
-  { label: 'Total Swept', value: '$2.5M+' },
-  { label: 'Chains Supported', value: '15+' },
-  { label: 'Sweeps Completed', value: '10K+' },
-];
 
 const steps = [
   {
     icon: Wallet,
     title: 'Connect Wallet',
-    description: 'Connect your wallet to see dust balances across all chains.',
+    description: 'Connect your wallet to see your balances across supported chains.',
   },
   {
     icon: MousePointerClick,
-    title: 'Select Chains',
-    description: 'Choose which chains have dust you want to sweep.',
+    title: 'Select Chain',
+    description: 'Choose which chain has funds you want to sweep.',
   },
   {
     icon: Send,
     title: 'Pick Destination',
-    description: 'Select where to send your consolidated funds.',
+    description: 'Select the address where you want to receive your funds.',
   },
   {
     icon: CheckCircle2,
@@ -36,15 +29,13 @@ const steps = [
   },
 ];
 
-const chains = [
-  { name: 'Ethereum', color: '#627EEA' },
-  { name: 'Base', color: '#0052FF' },
-  { name: 'Optimism', color: '#FF0420' },
-  { name: 'Arbitrum', color: '#12AAFF' },
-  { name: 'Polygon', color: '#8247E5' },
-  { name: 'BNB Chain', color: '#F0B90B' },
-  { name: 'Gnosis', color: '#04795B' },
-  { name: 'Unichain', color: '#FF007A' },
+const testnetChains = [
+  { name: 'Sepolia', color: '#627EEA' },
+  { name: 'Base Sepolia', color: '#0052FF' },
+  { name: 'Optimism Sepolia', color: '#FF0420' },
+  { name: 'Arbitrum Sepolia', color: '#12AAFF' },
+  { name: 'Polygon Amoy', color: '#8247E5' },
+  { name: 'BSC Testnet', color: '#F0B90B' },
 ];
 
 export default function Home() {
@@ -52,6 +43,13 @@ export default function Home() {
 
   return (
     <div className="relative">
+      {/* Testnet Banner */}
+      <div className="bg-brand-purple/10 border-b border-brand-purple/20 py-2 px-4 text-center">
+        <p className="text-sm text-brand-purple font-medium">
+          Currently live on testnets only. Same-chain sweeps supported.
+        </p>
+      </div>
+
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-glow opacity-50 pointer-events-none" />
 
@@ -64,17 +62,13 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="text-center max-w-3xl mx-auto"
           >
-            <div className="flex justify-center mb-6">
-              <Logo className="h-16 w-16" />
-            </div>
-
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Sweep your dust{' '}
+              Sweep your leftover balance{' '}
               <span className="gradient-text">to zero</span>
             </h1>
 
             <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-8 max-w-2xl mx-auto">
-              Exit any blockchain with exactly 0 balance. Consolidate leftover ETH from unused chains to your main wallet in one click.
+              Exit a blockchain without leaving any gas token behind. Transfer 100% of your native gas token from chains you no longer use in one click.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -101,30 +95,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 border-y border-light-border dark:border-dark-border bg-light-elevated/50 dark:bg-dark-elevated/50">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="text-center"
-              >
-                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-zinc-600 dark:text-zinc-400">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
       <section id="how-it-works" className="py-20">
         <div className="container mx-auto px-4">
@@ -138,8 +108,8 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               How it works
             </h2>
-            <p className="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-              ZeroDust uses EIP-7702 sponsored transactions to sweep your entire balance without needing gas on the source chain.
+            <p className="text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto">
+              Sweeping works on any chain with EIP-7702 support. ZeroDust sponsors the gas on the source chain so you can transfer 100% of your balance. A fee is charged for the service, which covers the actual gas cost plus a buffer to ensure transactions succeed.
             </p>
           </motion.div>
 
@@ -180,15 +150,15 @@ export default function Home() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Supported Chains
+              6 Testnet Chains Supported
             </h2>
             <p className="text-zinc-600 dark:text-zinc-400">
-              Sweep dust from any EIP-7702 compatible chain
+              Currently live on testnets. Mainnet coming soon.
             </p>
           </motion.div>
 
           <div className="flex flex-wrap justify-center gap-4">
-            {chains.map((chain, index) => (
+            {testnetChains.map((chain, index) => (
               <motion.div
                 key={chain.name}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -204,15 +174,6 @@ export default function Home() {
                 <span className="text-sm font-medium">{chain.name}</span>
               </motion.div>
             ))}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: chains.length * 0.05 }}
-              className="glass-card px-4 py-2"
-            >
-              <span className="text-sm text-zinc-500">+ more coming</span>
-            </motion.div>
           </div>
         </div>
       </section>
