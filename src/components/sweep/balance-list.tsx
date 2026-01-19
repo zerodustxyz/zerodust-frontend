@@ -1,16 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { formatEther } from 'viem';
-import { Loader2, RefreshCw } from 'lucide-react';
-import { testnetChainIds, chainMeta } from '@/config/wagmi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, RefreshCw, Check, ChevronDown } from 'lucide-react';
+import { testnetChainIds, mainnetChainIds, chainMeta } from '@/config/wagmi';
 import { api } from '@/services/api';
+import { ChainIcon } from '@/components/ui/chain-icon';
+
+export type NetworkMode = 'mainnet' | 'testnet';
 
 interface BalanceListProps {
   selectedChain: number | null;
-  onSelectionChange: (chain: number | null) => void;
+  onSelectionChange: (chain: number | null, balance?: bigint) => void;
   onBalanceChange?: (balance: bigint) => void;
+  networkMode?: NetworkMode;
 }
 
 interface ChainBalance {
@@ -20,12 +25,28 @@ interface ChainBalance {
   error: string | null;
 }
 
-export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange }: BalanceListProps) {
-  const { address } = useAccount();
+export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange, networkMode = 'testnet' }: BalanceListProps) {
+  const { address, isConnected } = useAccount();
   const [balances, setBalances] = useState<ChainBalance[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const chainsToShow = testnetChainIds;
+  const chainsToShow = networkMode === 'mainnet' ? mainnetChainIds : testnetChainIds;
+
+  // Initialize chains without balances when not connected or when network mode changes
+  useEffect(() => {
+    if (!isConnected) {
+      setBalances(chainsToShow.map(chainId => ({
+        chainId,
+        balance: 0n,
+        isLoading: false,
+        error: null,
+      })));
+    }
+    // Reset selection when network mode changes
+    onSelectionChange(null);
+  }, [isConnected, networkMode]);
 
   const fetchBalances = async () => {
     if (!address) return;
@@ -71,118 +92,188 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange 
   };
 
   useEffect(() => {
-    fetchBalances();
-  }, [address]);
+    if (address) {
+      fetchBalances();
+    }
+  }, [address, networkMode]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const selectChain = (chainId: number) => {
-    // Toggle: if already selected, deselect; otherwise select
-    if (selectedChain === chainId) {
-      onSelectionChange(null);
-      onBalanceChange?.(0n);
-    } else {
-      const balance = balances.find(b => b.chainId === chainId)?.balance || 0n;
-      onSelectionChange(chainId);
-      onBalanceChange?.(balance);
-    }
+    const balance = balances.find(b => b.chainId === chainId)?.balance || 0n;
+    onSelectionChange(chainId, balance);
+    onBalanceChange?.(balance);
+    setIsOpen(false);
   };
 
   const selectedBalance = balances.find(b => b.chainId === selectedChain)?.balance || 0n;
+  const selectedMeta = selectedChain ? chainMeta[selectedChain] : null;
   const isLoading = balances.some(b => b.isLoading);
+  const chainsWithBalance = balances.filter(b => b.balance > 0n);
 
   return (
-    <div className="space-y-4">
-      {/* Refresh button */}
-      <div className="flex justify-end">
-        <button
-          onClick={fetchBalances}
-          disabled={isRefreshing}
-          className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 flex items-center gap-1 transition-colors"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
-      </div>
-
-      {/* Chain list */}
-      <div className="space-y-2">
-        {balances.map(({ chainId, balance, isLoading, error }) => {
-          const meta = chainMeta[chainId] || { name: `Chain ${chainId}`, color: '#888', symbol: 'ETH' };
-          const isSelected = selectedChain === chainId;
-          const hasBalance = balance > 0n;
-
-          return (
-            <button
-              key={chainId}
-              onClick={() => hasBalance && !isLoading && selectChain(chainId)}
-              disabled={!hasBalance || isLoading}
-              className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
-                isSelected
-                  ? 'bg-brand-purple/10 border-2 border-brand-purple'
-                  : 'bg-light-elevated dark:bg-dark-elevated border-2 border-transparent hover:border-zinc-300 dark:hover:border-zinc-700'
-              } ${!hasBalance && !isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <div className="flex items-center gap-3">
-                {/* Radio button */}
-                <div
-                  className={`w-5 h-5 rounded-full flex items-center justify-center border-2 ${
-                    isSelected
-                      ? 'border-brand-purple'
-                      : 'border-zinc-300 dark:border-zinc-600'
-                  }`}
-                >
-                  {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-brand-purple" />}
+    <div className="relative" ref={dropdownRef}>
+      {/* Selected chain / selector trigger */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 bg-light-elevated dark:bg-dark-elevated rounded-2xl hover:bg-light-border/50 dark:hover:bg-dark-border/50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          {selectedChain && selectedMeta ? (
+            <>
+              {/* Chain icon */}
+              <ChainIcon chainId={selectedChain} size={40} />
+              <div className="text-left">
+                <div className="font-semibold">{selectedMeta.name}</div>
+                <div className="text-sm text-zinc-500">{selectedMeta.symbol}</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                <span className="text-zinc-400">?</span>
+              </div>
+              <div className="text-left">
+                <div className="font-semibold text-zinc-400">Select chain</div>
+                <div className="text-sm text-zinc-500">
+                  {isConnected ? `${chainsWithBalance.length} with balance` : 'Choose source chain'}
                 </div>
-
-                {/* Chain info */}
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: meta.color }}
-                />
-                <span className="font-medium">{meta.name}</span>
               </div>
+            </>
+          )}
+        </div>
 
-              {/* Balance */}
-              <div className="text-right">
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
-                ) : error ? (
-                  <span className="text-xs text-red-500">{error}</span>
-                ) : (
-                  <>
-                    <div className="font-mono text-sm">
-                      {Number(formatEther(balance)).toFixed(6)} {meta.symbol}
-                    </div>
-                    {balance === 0n && (
-                      <div className="text-xs text-zinc-500">No balance</div>
-                    )}
-                  </>
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Selected balance */}
-      {selectedChain !== null && (
-        <div className="pt-4 border-t border-light-border dark:border-dark-border">
-          <div className="flex justify-between items-center">
-            <span className="text-zinc-600 dark:text-zinc-400">Amount to Sweep</span>
+        <div className="flex items-center gap-3">
+          {/* Balance display */}
+          {selectedChain && !isLoading && (
             <div className="text-right">
-              <div className="font-mono font-semibold">
-                {Number(formatEther(selectedBalance)).toFixed(6)} {chainMeta[selectedChain]?.symbol || 'ETH'}
+              <div className="font-mono text-lg font-semibold">
+                {isConnected
+                  ? Number(formatEther(selectedBalance)).toFixed(6)
+                  : '—'
+                }
               </div>
             </div>
-          </div>
+          )}
+          {isLoading && <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />}
+          <ChevronDown className={`w-5 h-5 text-zinc-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </div>
-      )}
+      </button>
 
-      {/* No balances message */}
-      {!isLoading && balances.every(b => b.balance === 0n) && (
-        <div className="text-center py-4 text-sm text-zinc-500">
-          No balances found on testnet chains. Fund a testnet wallet to test sweeping.
-        </div>
-      )}
+      {/* Dropdown */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full left-0 right-0 mt-2 z-50 bg-light-surface dark:bg-dark-surface rounded-2xl border border-light-border dark:border-dark-border shadow-xl overflow-hidden"
+          >
+            {/* Header with refresh */}
+            <div className="flex items-center justify-between p-3 border-b border-light-border dark:border-dark-border">
+              <span className="text-sm font-medium text-zinc-500">Select source chain</span>
+              {isConnected && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetchBalances();
+                  }}
+                  disabled={isRefreshing}
+                  className="p-1.5 rounded-lg hover:bg-light-elevated dark:hover:bg-dark-elevated transition-colors"
+                >
+                  <RefreshCw className={`w-4 h-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </button>
+              )}
+            </div>
+
+            {/* Chain list */}
+            <div className="max-h-80 overflow-y-auto">
+              {chainsToShow.map((chainId) => {
+                const chainData = balances.find(b => b.chainId === chainId);
+                const balance = chainData?.balance || 0n;
+                const chainLoading = chainData?.isLoading || false;
+                const error = chainData?.error || null;
+
+                const meta = chainMeta[chainId] || { name: `Chain ${chainId}`, color: '#888', symbol: 'ETH' };
+                const isSelected = selectedChain === chainId;
+                const hasBalance = balance > 0n;
+
+                // Allow selection when not connected OR when connected and has balance
+                const canSelect = !isConnected || hasBalance;
+
+                return (
+                  <button
+                    key={chainId}
+                    onClick={() => canSelect && !chainLoading && selectChain(chainId)}
+                    disabled={isConnected && (!hasBalance || chainLoading)}
+                    className={`w-full flex items-center justify-between p-3 transition-colors ${
+                      isSelected
+                        ? 'bg-brand-violet/10'
+                        : canSelect
+                        ? 'hover:bg-light-elevated dark:hover:bg-dark-elevated'
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Chain icon */}
+                      <ChainIcon chainId={chainId} size={32} />
+                      <div className="text-left">
+                        <div className="font-medium text-sm">{meta.name}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {isConnected ? (
+                        chainLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                        ) : error ? (
+                          <span className="text-xs text-red-500">{error}</span>
+                        ) : (
+                          <span className={`font-mono text-sm ${hasBalance ? '' : 'text-zinc-400'}`}>
+                            {Number(formatEther(balance)).toFixed(4)} {meta.symbol}
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-xs text-zinc-400">{meta.symbol}</span>
+                      )}
+                      {isSelected && <Check className="w-4 h-4 text-brand-violet" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Connect prompt when not connected */}
+            {!isConnected && (
+              <div className="p-3 border-t border-light-border dark:border-dark-border bg-light-elevated/50 dark:bg-dark-elevated/50">
+                <p className="text-xs text-zinc-500 text-center">
+                  Connect wallet to view balances
+                </p>
+              </div>
+            )}
+
+            {/* Empty state - only show when connected and no balances */}
+            {isConnected && !isLoading && chainsWithBalance.length === 0 && (
+              <div className="p-6 text-center">
+                <p className="text-sm text-zinc-500">No balances found</p>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Fund a testnet wallet to start sweeping
+                </p>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

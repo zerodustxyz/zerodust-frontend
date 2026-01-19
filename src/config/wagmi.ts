@@ -45,16 +45,27 @@ export const testnetChainIds = [
   97,       // BSC Testnet
 ];
 
+// Mainnet chain IDs for filtering
+export const mainnetChainIds = [
+  1,        // Ethereum
+  8453,     // Base
+  10,       // Optimism
+  42161,    // Arbitrum
+  137,      // Polygon
+  56,       // BNB Chain
+  100,      // Gnosis
+];
+
 // Public RPC URLs for each chain (used only for wallet signing, not balance fetching)
 // Balance fetching goes through the backend API for better reliability and key security
 export const rpcUrls: Record<number, string> = {
-  // Testnets (public RPCs)
-  11155111: 'https://rpc.sepolia.org',
+  // Testnets (public RPCs - using more reliable endpoints)
+  11155111: 'https://ethereum-sepolia-rpc.publicnode.com',
   84532: 'https://sepolia.base.org',
   11155420: 'https://sepolia.optimism.io',
   421614: 'https://sepolia-rollup.arbitrum.io/rpc',
   80002: 'https://rpc-amoy.polygon.technology',
-  97: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+  97: 'https://bsc-testnet-rpc.publicnode.com',
 };
 
 export const config = getDefaultConfig({

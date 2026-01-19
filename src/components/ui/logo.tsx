@@ -12,15 +12,28 @@ export function Logo({ className = 'h-8 w-8' }: LogoProps) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Gradient definition */}
+      {/* Gradient definitions */}
       <defs>
         <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8B5CF6" />
+          <stop offset="0%" stopColor="#7C3AED" />
           <stop offset="100%" stopColor="#06B6D4" />
+        </linearGradient>
+        <linearGradient id="logoGradientLight" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#A855F7" />
+          <stop offset="100%" stopColor="#22D3EE" />
         </linearGradient>
       </defs>
 
-      {/* Outer circle */}
+      {/* Background circle with gradient */}
+      <circle
+        cx="16"
+        cy="16"
+        r="15"
+        fill="url(#logoGradient)"
+        opacity="0.1"
+      />
+
+      {/* Outer ring */}
       <circle
         cx="16"
         cy="16"
@@ -30,20 +43,32 @@ export function Logo({ className = 'h-8 w-8' }: LogoProps) {
         fill="none"
       />
 
-      {/* Inner zero/dust symbol */}
-      <path
-        d="M16 8C11.582 8 8 11.582 8 16C8 20.418 11.582 24 16 24C20.418 24 24 20.418 24 16C24 11.582 20.418 8 16 8ZM16 20C13.791 20 12 18.209 12 16C12 13.791 13.791 12 16 12C18.209 12 20 13.791 20 16C20 18.209 18.209 20 16 20Z"
+      {/* Inner zero/donut - representing "zero" */}
+      <circle
+        cx="16"
+        cy="16"
+        r="7"
+        stroke="url(#logoGradient)"
+        strokeWidth="3"
+        fill="none"
+      />
+
+      {/* Center dot - representing "dust" being swept */}
+      <circle
+        cx="16"
+        cy="16"
+        r="2"
         fill="url(#logoGradient)"
       />
 
-      {/* Sweep arrow */}
+      {/* Sweep indicator - small arc showing motion */}
       <path
-        d="M22 10L26 14L22 18"
-        stroke="url(#logoGradient)"
+        d="M23 9C25.5 11.5 27 15 27 16"
+        stroke="url(#logoGradientLight)"
         strokeWidth="2"
         strokeLinecap="round"
-        strokeLinejoin="round"
         fill="none"
+        opacity="0.6"
       />
     </svg>
   );
