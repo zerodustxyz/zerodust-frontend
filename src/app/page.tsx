@@ -196,7 +196,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative py-4 md:py-12 lg:py-16">
+      <section className="relative py-4 md:py-6 lg:py-8">
         <div className="container mx-auto px-4">
           {/* Animated sweep effect - dust particles (hidden on mobile for cleaner look) */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
@@ -245,12 +245,12 @@ export default function Home() {
             />
           </div>
 
-          {/* Hero headline - compact on mobile, expanded on desktop */}
+          {/* Hero headline - compact on both mobile and desktop */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-4 md:mb-10"
+            className="text-center mb-4 md:mb-4"
           >
             {/* Mobile: Simple tagline */}
             <h1 className="md:hidden text-2xl font-bold tracking-tight mb-1">
@@ -260,9 +260,9 @@ export default function Home() {
               Exit any chain with exactly 0 balance.
             </p>
 
-            {/* Desktop: Full hero */}
+            {/* Desktop: Compact hero */}
             <motion.h1
-              className="hidden md:block text-5xl lg:text-7xl font-extrabold tracking-tighter mb-4 md:mb-5"
+              className="hidden md:block text-4xl lg:text-5xl font-extrabold tracking-tighter mb-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -272,7 +272,7 @@ export default function Home() {
               {' '}to Zero
             </motion.h1>
             <motion.p
-              className="hidden md:block text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto px-4 leading-relaxed"
+              className="hidden md:block text-base lg:text-lg text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -281,12 +281,12 @@ export default function Home() {
             </motion.p>
           </motion.div>
 
-          {/* Trust indicators - hidden on mobile, shown on desktop */}
+          {/* Trust indicators - hidden on mobile, compact on desktop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="hidden md:flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 md:mb-10"
+            className="hidden md:flex flex-wrap justify-center gap-4 mb-6"
           >
             {trustIndicators.map((item, index) => (
               <motion.div
