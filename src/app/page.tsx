@@ -196,7 +196,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative py-4 md:py-6 lg:py-8">
+      <section className="relative py-2 md:py-4 lg:py-6">
         <div className="container mx-auto px-4">
           {/* Animated sweep effect - dust particles (hidden on mobile for cleaner look) */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
@@ -250,7 +250,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-4 md:mb-4"
+            className="text-center mb-2 md:mb-3"
           >
             {/* Mobile: Simple tagline */}
             <h1 className="md:hidden text-2xl font-bold tracking-tight mb-1">
@@ -262,7 +262,7 @@ export default function Home() {
 
             {/* Desktop: Compact hero */}
             <motion.h1
-              className="hidden md:block text-4xl lg:text-5xl font-extrabold tracking-tighter mb-2"
+              className="hidden md:block text-3xl lg:text-4xl font-extrabold tracking-tighter mb-1"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -272,7 +272,7 @@ export default function Home() {
               {' '}to Zero
             </motion.h1>
             <motion.p
-              className="hidden md:block text-base lg:text-lg text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto leading-relaxed"
+              className="hidden md:block text-sm lg:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -286,7 +286,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="hidden md:flex flex-wrap justify-center gap-4 mb-6"
+            className="hidden md:flex flex-wrap justify-center gap-3 mb-4"
           >
             {trustIndicators.map((item, index) => (
               <motion.div
@@ -294,10 +294,10 @@ export default function Home() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + index * 0.1 }}
-                className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400"
+                className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400"
               >
-                <div className="w-8 h-8 rounded-lg bg-brand-violet/10 flex items-center justify-center">
-                  <item.icon className="w-4 h-4 text-brand-violet" />
+                <div className="w-6 h-6 rounded-md bg-brand-violet/10 flex items-center justify-center">
+                  <item.icon className="w-3 h-3 text-brand-violet" />
                 </div>
                 <span className="font-medium">{item.label}</span>
               </motion.div>
