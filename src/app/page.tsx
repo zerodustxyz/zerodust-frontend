@@ -196,10 +196,10 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative py-8 md:py-12 lg:py-16">
+      <section className="relative py-4 md:py-12 lg:py-16">
         <div className="container mx-auto px-4">
-          {/* Animated sweep effect - dust particles being swept */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Animated sweep effect - dust particles (hidden on mobile for cleaner look) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
             {/* Floating dust particles */}
             {[...Array(8)].map((_, i) => (
               <motion.div
@@ -245,26 +245,34 @@ export default function Home() {
             />
           </div>
 
-          {/* Hero headline */}
+          {/* Hero headline - compact on mobile, expanded on desktop */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-8 md:mb-10"
+            className="text-center mb-4 md:mb-10"
           >
+            {/* Mobile: Simple tagline */}
+            <h1 className="md:hidden text-2xl font-bold tracking-tight mb-1">
+              Sweep Your <span className="gradient-text">Dust</span> to Zero
+            </h1>
+            <p className="md:hidden text-sm text-zinc-500 mb-0">
+              Exit any chain with exactly 0 balance.
+            </p>
+
+            {/* Desktop: Full hero */}
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter mb-4 md:mb-5"
+              className="hidden md:block text-5xl lg:text-7xl font-extrabold tracking-tighter mb-4 md:mb-5"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               Sweep Your{' '}
               <span className="gradient-text-animated">Dust</span>
-              <br className="sm:hidden" />
               {' '}to Zero
             </motion.h1>
             <motion.p
-              className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto px-4 leading-relaxed"
+              className="hidden md:block text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto px-4 leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -273,12 +281,12 @@ export default function Home() {
             </motion.p>
           </motion.div>
 
-          {/* Trust indicators */}
+          {/* Trust indicators - hidden on mobile, shown on desktop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 md:mb-10"
+            className="hidden md:flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 md:mb-10"
           >
             {trustIndicators.map((item, index) => (
               <motion.div
@@ -479,12 +487,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Tagline below card */}
+            {/* Tagline below card - desktop only */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-center text-sm text-zinc-500 mt-6"
+              className="hidden md:block text-center text-sm text-zinc-500 mt-6"
             >
               Transfer 100% of your native gas token. Zero dust left behind.
             </motion.p>
