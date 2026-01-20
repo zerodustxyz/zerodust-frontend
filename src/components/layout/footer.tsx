@@ -46,8 +46,8 @@ export function Footer() {
             <div className="lg:col-span-1">
               <Link href="/" className="inline-block mb-4">
                 <span className="text-xl font-bold tracking-tight">
-                  <span className="text-brand-dark dark:text-brand-light">Zero</span>
-                  <span className="text-sand-600 dark:text-sand-400">Dust</span>
+                  <span className="text-brand-primary">Zero</span>
+                  <span className="text-sand-500 dark:text-sand-400">Dust</span>
                 </span>
               </Link>
               <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 max-w-xs">
