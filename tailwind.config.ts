@@ -10,22 +10,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand colors
+        // Brand colors - Fresh Emerald/Teal palette
         brand: {
-          purple: '#8B5CF6',
-          violet: '#7C3AED',
-          cyan: '#06B6D4',
+          primary: '#10B981',      // Emerald 500 - Main brand color
+          secondary: '#14B8A6',    // Teal 500 - Secondary accent
+          light: '#34D399',        // Emerald 400 - Lighter accent
+          dark: '#059669',         // Emerald 600 - Darker shade
+          muted: '#6EE7B7',        // Emerald 300 - Muted/subtle
         },
         // Semantic colors
         success: '#10B981',
         warning: '#F59E0B',
         error: '#F43F5E',
+        info: '#3B82F6',
         // Dark mode palette
         dark: {
-          bg: '#09090B',
-          surface: '#18181B',
-          elevated: '#27272A',
-          border: '#3F3F46',
+          bg: '#0A0A0B',
+          surface: '#141416',
+          elevated: '#1C1C1F',
+          border: '#2A2A2E',
           muted: '#71717A',
         },
         // Light mode palette
@@ -38,28 +41,29 @@ const config: Config = {
         },
       },
       backgroundImage: {
-        // Brand gradients
-        'gradient-brand': 'linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%)',
-        'gradient-brand-hover': 'linear-gradient(135deg, #6D28D9 0%, #0891B2 100%)',
-        'gradient-brand-vertical': 'linear-gradient(180deg, #7C3AED 0%, #06B6D4 100%)',
-        'gradient-purple': 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)',
+        // Brand gradients - Emerald/Teal
+        'gradient-brand': 'linear-gradient(135deg, #10B981 0%, #14B8A6 100%)',
+        'gradient-brand-hover': 'linear-gradient(135deg, #059669 0%, #0D9488 100%)',
+        'gradient-brand-vertical': 'linear-gradient(180deg, #10B981 0%, #14B8A6 100%)',
+        'gradient-brand-reverse': 'linear-gradient(135deg, #14B8A6 0%, #10B981 100%)',
+        'gradient-brand-vibrant': 'linear-gradient(135deg, #34D399 0%, #2DD4BF 100%)',
         // Background effects
         'gradient-radial': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
         'gradient-radial-top': 'radial-gradient(ellipse at top, var(--tw-gradient-stops))',
-        'gradient-glow': 'radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.15) 0%, transparent 50%)',
-        'gradient-glow-bottom': 'radial-gradient(circle at 50% 100%, rgba(124, 58, 237, 0.1) 0%, transparent 50%)',
+        'gradient-glow': 'radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
+        'gradient-glow-bottom': 'radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)',
         // Mesh gradients for hero
         'mesh-gradient': `
-          radial-gradient(at 40% 20%, rgba(124, 58, 237, 0.3) 0px, transparent 50%),
-          radial-gradient(at 80% 0%, rgba(6, 182, 212, 0.2) 0px, transparent 50%),
-          radial-gradient(at 0% 50%, rgba(124, 58, 237, 0.2) 0px, transparent 50%),
-          radial-gradient(at 80% 50%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
-          radial-gradient(at 0% 100%, rgba(124, 58, 237, 0.15) 0px, transparent 50%)
+          radial-gradient(at 40% 20%, rgba(16, 185, 129, 0.25) 0px, transparent 50%),
+          radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.2) 0px, transparent 50%),
+          radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+          radial-gradient(at 80% 50%, rgba(20, 184, 166, 0.12) 0px, transparent 50%),
+          radial-gradient(at 0% 100%, rgba(52, 211, 153, 0.1) 0px, transparent 50%)
         `,
         'mesh-gradient-light': `
-          radial-gradient(at 40% 20%, rgba(124, 58, 237, 0.08) 0px, transparent 50%),
-          radial-gradient(at 80% 0%, rgba(6, 182, 212, 0.06) 0px, transparent 50%),
-          radial-gradient(at 0% 50%, rgba(124, 58, 237, 0.06) 0px, transparent 50%)
+          radial-gradient(at 40% 20%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+          radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.06) 0px, transparent 50%),
+          radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.05) 0px, transparent 50%)
         `,
         // Noise texture
         'noise': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")",
@@ -79,16 +83,20 @@ const config: Config = {
         '4xl': '2rem',
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(124, 58, 237, 0.3)',
-        'glow-lg': '0 0 40px rgba(124, 58, 237, 0.4)',
-        'glow-xl': '0 0 60px rgba(124, 58, 237, 0.5)',
-        'glow-cyan': '0 0 20px rgba(6, 182, 212, 0.3)',
+        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+        'glow-lg': '0 0 40px rgba(16, 185, 129, 0.4)',
+        'glow-xl': '0 0 60px rgba(16, 185, 129, 0.5)',
+        'glow-teal': '0 0 20px rgba(20, 184, 166, 0.3)',
+        'glow-brand': '0 0 30px rgba(16, 185, 129, 0.35), 0 0 60px rgba(16, 185, 129, 0.2)',
         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
         'card-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
         'card-dark': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2)',
+        'card-glow': '0 8px 32px rgba(16, 185, 129, 0.15)',
+        'card-glow-hover': '0 16px 48px rgba(16, 185, 129, 0.25)',
         'inner-glow': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
         'button': '0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02)',
-        'button-hover': '0 4px 12px rgba(124, 58, 237, 0.25)',
+        'button-hover': '0 4px 12px rgba(16, 185, 129, 0.25)',
+        'button-glow': '0 0 20px rgba(16, 185, 129, 0.4), 0 4px 14px rgba(16, 185, 129, 0.3)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -105,6 +113,8 @@ const config: Config = {
         'slide-in-right': 'slideInRight 0.3s ease-out forwards',
         'shimmer': 'shimmer 2s linear infinite',
         'orbit': 'orbit 20s linear infinite',
+        'sweep': 'sweep 3s ease-in-out infinite',
+        'particle-float': 'particleFloat 4s ease-in-out infinite',
       },
       keyframes: {
         gradient: {
@@ -150,6 +160,15 @@ const config: Config = {
         orbit: {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
+        },
+        sweep: {
+          '0%': { transform: 'translateX(-100%)', opacity: '0' },
+          '50%': { opacity: '1' },
+          '100%': { transform: 'translateX(100%)', opacity: '0' },
+        },
+        particleFloat: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)', opacity: '0.3' },
+          '50%': { transform: 'translate(10px, -20px) scale(1.2)', opacity: '0.7' },
         },
       },
       transitionTimingFunction: {

@@ -19,6 +19,7 @@ import {
   ArrowRightLeft,
   Lock,
   Gauge,
+  ArrowUpRight,
 } from 'lucide-react';
 import { BalanceList, NetworkMode } from '@/components/sweep/balance-list';
 import { DestinationForm } from '@/components/sweep/destination-form';
@@ -164,8 +165,6 @@ export default function Home() {
 
   // Determine if we can proceed with sweep
   const canSweep = isConnected && selectedChain !== null && effectiveDestination && quote;
-  // Show connect button when user has made selections but isn't connected
-  const showConnectPrompt = !isConnected && (selectedChain !== null || destinationAddress);
 
   return (
     <div className="relative min-h-screen">
@@ -183,11 +182,11 @@ export default function Home() {
       <div className={`relative border-b py-2.5 px-4 ${
         networkMode === 'mainnet'
           ? 'bg-gradient-to-r from-amber-500/10 via-amber-400/10 to-amber-500/10 border-amber-500/20'
-          : 'bg-gradient-to-r from-brand-violet/10 via-brand-cyan/10 to-brand-violet/10 border-brand-violet/20'
+          : 'bg-gradient-to-r from-brand-primary/10 via-brand-secondary/10 to-brand-primary/10 border-brand-primary/20'
       }`}>
         <div className="flex items-center justify-center gap-2">
-          <Sparkles className={`w-4 h-4 ${networkMode === 'mainnet' ? 'text-amber-500' : 'text-brand-violet'}`} />
-          <p className={`text-sm font-medium ${networkMode === 'mainnet' ? 'text-amber-500' : 'text-brand-violet'}`}>
+          <Sparkles className={`w-4 h-4 ${networkMode === 'mainnet' ? 'text-amber-500' : 'text-brand-primary'}`} />
+          <p className={`text-sm font-medium ${networkMode === 'mainnet' ? 'text-amber-500' : 'text-brand-primary'}`}>
             {networkMode === 'mainnet'
               ? 'Not live on mainnet yet. Coming soon!'
               : 'Currently live on testnets only. Same-chain sweeps supported.'}
@@ -211,8 +210,8 @@ export default function Home() {
                   width: `${3 + (i % 3) * 2}px`,
                   height: `${3 + (i % 3) * 2}px`,
                   background: i % 2 === 0
-                    ? 'rgba(124, 58, 237, 0.4)'
-                    : 'rgba(6, 182, 212, 0.3)',
+                    ? 'rgba(16, 185, 129, 0.4)'
+                    : 'rgba(20, 184, 166, 0.3)',
                 }}
                 animate={{
                   y: [0, -40, 0],
@@ -231,7 +230,7 @@ export default function Home() {
 
             {/* Sweep line animation */}
             <motion.div
-              className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-violet/30 to-transparent"
+              className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-primary/30 to-transparent"
               style={{ top: '60%' }}
               animate={{
                 opacity: [0, 0.5, 0],
@@ -256,7 +255,7 @@ export default function Home() {
             <h1 className="md:hidden text-2xl font-bold tracking-tight mb-1">
               Sweep Your <span className="gradient-text">Dust</span> to Zero
             </h1>
-            <p className="md:hidden text-sm text-zinc-500 mb-0">
+            <p className="md:hidden text-sm text-zinc-500 dark:text-zinc-400 mb-0">
               Exit any chain with exactly 0 balance.
             </p>
 
@@ -296,8 +295,8 @@ export default function Home() {
                 transition={{ delay: 0.3 + index * 0.1 }}
                 className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400"
               >
-                <div className="w-6 h-6 rounded-md bg-brand-violet/10 flex items-center justify-center">
-                  <item.icon className="w-3 h-3 text-brand-violet" />
+                <div className="w-6 h-6 rounded-md bg-brand-primary/10 flex items-center justify-center">
+                  <item.icon className="w-3 h-3 text-brand-primary" />
                 </div>
                 <span className="font-medium">{item.label}</span>
               </motion.div>
@@ -311,10 +310,10 @@ export default function Home() {
             className="max-w-[440px] mx-auto"
           >
             {/* Sweep Card - Premium glassmorphism with gradient border */}
-            <div className="relative p-[1px] rounded-3xl bg-gradient-to-br from-brand-violet/50 via-brand-cyan/30 to-brand-violet/50">
+            <div className="relative p-[1px] rounded-3xl bg-gradient-to-br from-brand-primary/50 via-brand-secondary/30 to-brand-primary/50">
               {/* Glow effect behind card */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-brand-violet/20 via-brand-cyan/10 to-brand-violet/20 rounded-3xl blur-xl opacity-70" />
-              <div className="sweep-card relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary/20 via-brand-secondary/10 to-brand-primary/20 rounded-3xl blur-xl opacity-70" />
+              <div className="sweep-card sweep-card-enter relative">
               {/* Header */}
               <div className="p-5 pb-0">
                 <div className="flex items-center justify-between">
@@ -352,7 +351,7 @@ export default function Home() {
                   {isConnected && selectedBalance > 0n && (
                     <button
                       onClick={handleMaxClick}
-                      className="text-xs text-brand-violet hover:text-brand-purple font-semibold transition-colors"
+                      className="text-xs text-brand-primary hover:text-brand-dark font-semibold transition-colors"
                     >
                       MAX
                     </button>
@@ -399,13 +398,17 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Arrow divider */}
+              {/* Arrow divider with animation */}
               <div className="relative h-0 z-10">
-                <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <motion.div
+                  className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
+                  animate={{ y: [0, 2, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                >
                   <div className="w-12 h-12 rounded-2xl bg-white dark:bg-zinc-900 border-4 border-zinc-100 dark:border-zinc-800 flex items-center justify-center shadow-lg">
-                    <ArrowDown className="w-5 h-5 text-brand-violet" />
+                    <ArrowDown className="w-5 h-5 text-brand-primary" />
                   </div>
-                </div>
+                </motion.div>
               </div>
 
               {/* To section - Always interactive */}
@@ -521,11 +524,19 @@ export default function Home() {
 
           {/* Steps timeline */}
           <div className="relative max-w-5xl mx-auto">
-            {/* Connecting line - desktop only */}
-            <div className="hidden lg:block absolute top-16 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-brand-violet/20 via-brand-cyan/20 to-brand-violet/20" />
+            {/* Connecting line - desktop only with animated gradient */}
+            <div className="hidden lg:block absolute top-16 left-[12%] right-[12%] h-0.5">
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-primary/20 via-brand-secondary/30 to-brand-primary/20" />
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary"
+                style={{ opacity: 0.4 }}
+                animate={{ backgroundPosition: ['0% 0%', '100% 0%'] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+              />
+            </div>
 
             {/* Mobile: vertical line */}
-            <div className="lg:hidden absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-brand-violet/20 via-brand-cyan/20 to-brand-violet/20" />
+            <div className="lg:hidden absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-brand-primary/20 via-brand-secondary/20 to-brand-primary/20" />
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
               {steps.map((step, index) => (
@@ -544,7 +555,7 @@ export default function Home() {
                       <div className="step-number w-10 h-10 lg:w-12 lg:h-12 lg:mx-auto">
                         <step.icon className="w-5 h-5 lg:w-6 lg:h-6" />
                       </div>
-                      <span className="absolute -top-1 -right-1 w-6 h-6 lg:w-7 lg:h-7 rounded-full bg-white dark:bg-zinc-900 border-2 border-brand-violet text-xs font-bold flex items-center justify-center shadow-md">
+                      <span className="absolute -top-1 -right-1 w-6 h-6 lg:w-7 lg:h-7 rounded-full bg-white dark:bg-zinc-900 border-2 border-brand-primary text-xs font-bold flex items-center justify-center shadow-md text-brand-primary">
                         {index + 1}
                       </span>
                     </div>
@@ -566,7 +577,7 @@ export default function Home() {
       {/* Why ZeroDust Section */}
       <section className="relative py-12 md:py-16 border-t border-zinc-200/50 dark:border-zinc-800/50 overflow-hidden">
         {/* Background accent */}
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-violet/[0.02] to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-primary/[0.02] to-transparent pointer-events-none" />
 
         <div className="container mx-auto px-4">
           <motion.div
@@ -593,16 +604,15 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
                 className="group"
               >
-                <div className="glass-card p-6 h-full">
+                <div className="feature-card p-6 h-full">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-brand flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-violet/25 group-hover:shadow-brand-violet/40 transition-shadow">
+                    <div className="feature-card-icon">
                       <feature.icon className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold mb-2 group-hover:text-brand-violet transition-colors">{feature.title}</h3>
+                      <h3 className="text-lg font-bold mb-2 group-hover:text-brand-primary transition-colors">{feature.title}</h3>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
                         {feature.description}
                       </p>
@@ -646,21 +656,21 @@ export default function Home() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                whileHover={{ scale: 1.05, y: -3 }}
+                whileHover={{ scale: 1.05, y: -4 }}
                 whileTap={{ scale: 0.98 }}
                 className="glass-card px-4 py-3 md:px-5 md:py-4 flex items-center gap-3 md:gap-4 cursor-default group"
               >
                 <div className="relative">
                   <ChainIcon chainId={chain.chainId} size={36} className="md:w-10 md:h-10" />
                   <motion.div
-                    className="absolute inset-0 rounded-full bg-brand-violet/20"
+                    className="absolute inset-0 rounded-full bg-brand-primary/20"
                     initial={{ scale: 0, opacity: 0 }}
                     whileHover={{ scale: 1.5, opacity: 0.3 }}
                     transition={{ duration: 0.3 }}
                   />
                 </div>
                 <div>
-                  <span className="font-semibold block text-sm md:text-base group-hover:text-brand-violet transition-colors">{chain.name}</span>
+                  <span className="font-semibold block text-sm md:text-base group-hover:text-brand-primary transition-colors">{chain.name}</span>
                   <span className="text-xs text-zinc-500">{chain.symbol}</span>
                 </div>
               </motion.div>
@@ -672,7 +682,7 @@ export default function Home() {
       {/* Final CTA Section */}
       <section className="relative py-16 md:py-20 border-t border-zinc-200/50 dark:border-zinc-800/50 overflow-hidden">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-violet/5 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/5 via-transparent to-transparent pointer-events-none" />
 
         <div className="container mx-auto px-4">
           <motion.div
@@ -682,19 +692,29 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="max-w-2xl mx-auto text-center"
           >
-            {/* Decorative dust particles */}
+            {/* Decorative sweep icon with animation */}
             <div className="relative inline-block mb-6">
               <motion.div
-                className="w-3 h-3 bg-brand-violet/40 rounded-full absolute -left-8 top-0"
-                animate={{ y: [0, -10, 0], opacity: [0.3, 0.7, 0.3] }}
+                className="w-4 h-4 bg-brand-primary/40 rounded-full absolute -left-8 top-0"
+                animate={{ y: [0, -10, 0], opacity: [0.3, 0.7, 0.3], scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
               <motion.div
-                className="w-2 h-2 bg-brand-cyan/40 rounded-full absolute -right-6 top-2"
-                animate={{ y: [0, -8, 0], opacity: [0.3, 0.6, 0.3] }}
+                className="w-3 h-3 bg-brand-secondary/40 rounded-full absolute -right-6 top-2"
+                animate={{ y: [0, -8, 0], opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
                 transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
               />
-              <Sparkles className="w-10 h-10 text-brand-violet mx-auto" />
+              <motion.div
+                className="w-2 h-2 bg-brand-light/50 rounded-full absolute -left-4 bottom-0"
+                animate={{ y: [0, -6, 0], opacity: [0.2, 0.5, 0.2] }}
+                transition={{ duration: 1.8, repeat: Infinity, delay: 0.3 }}
+              />
+              <motion.div
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Sparkles className="w-12 h-12 text-brand-primary mx-auto" />
+              </motion.div>
             </div>
 
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight">
@@ -709,12 +729,13 @@ export default function Home() {
                 {({ openConnectModal }) => (
                   <motion.button
                     onClick={openConnectModal}
-                    className="btn-glow text-lg"
+                    className="btn-glow text-lg group"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <Wallet className="w-5 h-5" />
                     Start Sweeping
+                    <ArrowUpRight className="w-4 h-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
                   </motion.button>
                 )}
               </ConnectButton.Custom>
@@ -723,12 +744,13 @@ export default function Home() {
             {isConnected && (
               <motion.button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="btn-glow text-lg"
+                className="btn-glow text-lg group"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <ArrowDown className="w-5 h-5 rotate-180" />
                 Go to Sweep
+                <ArrowUpRight className="w-4 h-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
               </motion.button>
             )}
 

@@ -40,9 +40,13 @@ export function Header() {
         <div className="h-16 md:h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-brand flex items-center justify-center shadow-lg shadow-brand-violet/25 group-hover:shadow-brand-violet/40 transition-shadow">
+            <motion.div
+              className="w-9 h-9 rounded-xl bg-gradient-brand flex items-center justify-center shadow-lg shadow-brand-primary/25 group-hover:shadow-brand-primary/40 transition-shadow"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Zap className="w-5 h-5 text-white" />
-            </div>
+            </motion.div>
             <span className="text-xl font-bold gradient-text">ZeroDust</span>
           </Link>
 
@@ -54,7 +58,7 @@ export function Header() {
                 href={link.href}
                 target={link.external ? '_blank' : undefined}
                 rel={link.external ? 'noopener noreferrer' : undefined}
-                className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-xl hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all duration-200"
+                className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-brand-primary dark:hover:text-brand-light rounded-xl hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 transition-all duration-200"
               >
                 {link.label}
               </Link>
@@ -123,7 +127,7 @@ export function Header() {
                   target={link.external ? '_blank' : undefined}
                   rel={link.external ? 'noopener noreferrer' : undefined}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-xl hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors"
+                  className="block px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-brand-primary dark:hover:text-brand-light rounded-xl hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 transition-colors"
                 >
                   {link.label}
                 </Link>
