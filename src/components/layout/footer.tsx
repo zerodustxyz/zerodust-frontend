@@ -51,17 +51,17 @@ export function Footer() {
                 Sweep your leftover balance to zero. Exit any blockchain without leaving dust behind.
               </p>
               {/* Social links */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {socialLinks.map((social) => (
                   <Link
                     key={social.label}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-icon"
+                    className="btn-social"
                     aria-label={social.label}
                   >
-                    <social.icon className="w-4 h-4" />
+                    <social.icon className="w-5 h-5" />
                   </Link>
                 ))}
               </div>
@@ -135,7 +135,7 @@ export function Footer() {
                 href="https://x.com/AndresDefi"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-violet hover:text-brand-purple transition-colors"
+                className="text-brand-primary hover:text-brand-dark transition-colors"
               >
                 andresdefi
               </Link>
