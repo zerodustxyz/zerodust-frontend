@@ -210,8 +210,8 @@ export default function Home() {
                   width: `${3 + (i % 3) * 2}px`,
                   height: `${3 + (i % 3) * 2}px`,
                   background: i % 2 === 0
-                    ? 'rgba(16, 185, 129, 0.4)'
-                    : 'rgba(20, 184, 166, 0.3)',
+                    ? 'rgba(139, 158, 130, 0.3)'
+                    : 'rgba(196, 180, 154, 0.25)',
                 }}
                 animate={{
                   y: [0, -40, 0],
@@ -309,10 +309,10 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
             className="max-w-[440px] mx-auto"
           >
-            {/* Sweep Card - Premium glassmorphism with gradient border */}
-            <div className="relative p-[1px] rounded-3xl bg-gradient-to-br from-brand-primary/50 via-brand-secondary/30 to-brand-primary/50">
-              {/* Glow effect behind card */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary/20 via-brand-secondary/10 to-brand-primary/20 rounded-3xl blur-xl opacity-70" />
+            {/* Sweep Card - Clean card with subtle border */}
+            <div className="relative p-[1px] rounded-3xl bg-gradient-to-br from-brand-primary/30 via-sand-300/20 to-brand-primary/30">
+              {/* Subtle shadow behind card */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary/5 via-sand-300/5 to-brand-primary/5 rounded-3xl blur-xl opacity-50" />
               <div className="sweep-card sweep-card-enter relative">
               {/* Header */}
               <div className="p-5 pb-0">
@@ -476,7 +476,7 @@ export default function Home() {
                     {({ openConnectModal }) => (
                       <motion.button
                         onClick={openConnectModal}
-                        className="btn-glow w-full"
+                        className="btn-elevated w-full"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -729,7 +729,7 @@ export default function Home() {
                 {({ openConnectModal }) => (
                   <motion.button
                     onClick={openConnectModal}
-                    className="btn-glow text-lg group"
+                    className="btn-elevated text-lg group"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -744,7 +744,7 @@ export default function Home() {
             {isConnected && (
               <motion.button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="btn-glow text-lg group"
+                className="btn-elevated text-lg group"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
               >

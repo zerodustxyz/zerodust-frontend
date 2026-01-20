@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Zap } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const navLinks = [
@@ -38,16 +38,16 @@ export function Header() {
     >
       <div className="container mx-auto px-4">
         <div className="h-16 md:h-20 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <motion.div
-              className="w-9 h-9 rounded-xl bg-gradient-brand flex items-center justify-center shadow-lg shadow-brand-primary/25 group-hover:shadow-brand-primary/40 transition-shadow"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          {/* Wordmark */}
+          <Link href="/" className="group">
+            <motion.span
+              className="text-2xl font-bold tracking-tight"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <Zap className="w-5 h-5 text-white" />
-            </motion.div>
-            <span className="text-xl font-bold gradient-text">ZeroDust</span>
+              <span className="text-brand-dark dark:text-brand-light">Zero</span>
+              <span className="text-sand-600 dark:text-sand-400">Dust</span>
+            </motion.span>
           </Link>
 
           {/* Desktop Navigation */}

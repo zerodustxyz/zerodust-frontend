@@ -10,13 +10,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand colors - Fresh Emerald/Teal palette
+        // Brand colors - Dusty Sage & Sand palette
         brand: {
-          primary: '#10B981',      // Emerald 500 - Main brand color
-          secondary: '#14B8A6',    // Teal 500 - Secondary accent
-          light: '#34D399',        // Emerald 400 - Lighter accent
-          dark: '#059669',         // Emerald 600 - Darker shade
-          muted: '#6EE7B7',        // Emerald 300 - Muted/subtle
+          primary: '#8B9E82',      // Dusty sage - Main brand color
+          secondary: '#C4B49A',    // Sand/beige - Secondary accent
+          light: '#A8B8A0',        // Lighter sage
+          dark: '#6B7E62',         // Darker sage
+          muted: '#CBD5C5',        // Pale sage
+        },
+        // Sand/beige palette
+        sand: {
+          50: '#FAF8F5',
+          100: '#F5F1EA',
+          200: '#EBE4D8',
+          300: '#DDD2C0',
+          400: '#C4B49A',
+          500: '#B5A488',
+          600: '#9A8A70',
+          700: '#7D705A',
+          800: '#655A49',
+          900: '#4D453A',
         },
         // Semantic colors
         success: '#10B981',
@@ -41,29 +54,32 @@ const config: Config = {
         },
       },
       backgroundImage: {
-        // Brand gradients - Emerald/Teal
-        'gradient-brand': 'linear-gradient(135deg, #10B981 0%, #14B8A6 100%)',
-        'gradient-brand-hover': 'linear-gradient(135deg, #059669 0%, #0D9488 100%)',
-        'gradient-brand-vertical': 'linear-gradient(180deg, #10B981 0%, #14B8A6 100%)',
-        'gradient-brand-reverse': 'linear-gradient(135deg, #14B8A6 0%, #10B981 100%)',
-        'gradient-brand-vibrant': 'linear-gradient(135deg, #34D399 0%, #2DD4BF 100%)',
-        // Background effects
+        // Brand gradients - Sage & Sand
+        'gradient-brand': 'linear-gradient(135deg, #8B9E82 0%, #A8B8A0 100%)',
+        'gradient-brand-hover': 'linear-gradient(135deg, #6B7E62 0%, #8B9E82 100%)',
+        'gradient-brand-vertical': 'linear-gradient(180deg, #8B9E82 0%, #A8B8A0 100%)',
+        'gradient-brand-reverse': 'linear-gradient(135deg, #A8B8A0 0%, #8B9E82 100%)',
+        'gradient-brand-vibrant': 'linear-gradient(135deg, #A8B8A0 0%, #C4B49A 100%)',
+        // Sand gradients
+        'gradient-sand': 'linear-gradient(135deg, #C4B49A 0%, #DDD2C0 100%)',
+        'gradient-sage-sand': 'linear-gradient(135deg, #8B9E82 0%, #C4B49A 100%)',
+        // Background effects - subtle, no glow
         'gradient-radial': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
         'gradient-radial-top': 'radial-gradient(ellipse at top, var(--tw-gradient-stops))',
-        'gradient-glow': 'radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
-        'gradient-glow-bottom': 'radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)',
-        // Mesh gradients for hero
+        'gradient-subtle': 'radial-gradient(circle at 50% 0%, rgba(139, 158, 130, 0.08) 0%, transparent 50%)',
+        'gradient-subtle-bottom': 'radial-gradient(circle at 50% 100%, rgba(196, 180, 154, 0.06) 0%, transparent 50%)',
+        // Mesh gradients for hero - muted
         'mesh-gradient': `
-          radial-gradient(at 40% 20%, rgba(16, 185, 129, 0.25) 0px, transparent 50%),
-          radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.2) 0px, transparent 50%),
-          radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
-          radial-gradient(at 80% 50%, rgba(20, 184, 166, 0.12) 0px, transparent 50%),
-          radial-gradient(at 0% 100%, rgba(52, 211, 153, 0.1) 0px, transparent 50%)
+          radial-gradient(at 40% 20%, rgba(139, 158, 130, 0.12) 0px, transparent 50%),
+          radial-gradient(at 80% 0%, rgba(196, 180, 154, 0.10) 0px, transparent 50%),
+          radial-gradient(at 0% 50%, rgba(139, 158, 130, 0.08) 0px, transparent 50%),
+          radial-gradient(at 80% 50%, rgba(196, 180, 154, 0.06) 0px, transparent 50%),
+          radial-gradient(at 0% 100%, rgba(168, 184, 160, 0.05) 0px, transparent 50%)
         `,
         'mesh-gradient-light': `
-          radial-gradient(at 40% 20%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
-          radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.06) 0px, transparent 50%),
-          radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.05) 0px, transparent 50%)
+          radial-gradient(at 40% 20%, rgba(139, 158, 130, 0.05) 0px, transparent 50%),
+          radial-gradient(at 80% 0%, rgba(196, 180, 154, 0.04) 0px, transparent 50%),
+          radial-gradient(at 0% 50%, rgba(139, 158, 130, 0.03) 0px, transparent 50%)
         `,
         // Noise texture
         'noise': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")",
@@ -83,20 +99,19 @@ const config: Config = {
         '4xl': '2rem',
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
-        'glow-lg': '0 0 40px rgba(16, 185, 129, 0.4)',
-        'glow-xl': '0 0 60px rgba(16, 185, 129, 0.5)',
-        'glow-teal': '0 0 20px rgba(20, 184, 166, 0.3)',
-        'glow-brand': '0 0 30px rgba(16, 185, 129, 0.35), 0 0 60px rgba(16, 185, 129, 0.2)',
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-        'card-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-        'card-dark': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2)',
-        'card-glow': '0 8px 32px rgba(16, 185, 129, 0.15)',
-        'card-glow-hover': '0 16px 48px rgba(16, 185, 129, 0.25)',
-        'inner-glow': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+        'soft': '0 2px 8px rgba(0, 0, 0, 0.08)',
+        'soft-lg': '0 4px 16px rgba(0, 0, 0, 0.1)',
+        'soft-xl': '0 8px 24px rgba(0, 0, 0, 0.12)',
+        'warm': '0 4px 12px rgba(196, 180, 154, 0.15)',
+        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06)',
+        'card-hover': '0 12px 20px -5px rgba(0, 0, 0, 0.1), 0 6px 8px -4px rgba(0, 0, 0, 0.08)',
+        'card-dark': '0 4px 6px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -2px rgba(0, 0, 0, 0.15)',
+        'card-elevated': '0 6px 20px rgba(0, 0, 0, 0.08)',
+        'card-elevated-hover': '0 12px 32px rgba(0, 0, 0, 0.12)',
+        'inner-soft': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
         'button': '0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02)',
-        'button-hover': '0 4px 12px rgba(16, 185, 129, 0.25)',
-        'button-glow': '0 0 20px rgba(16, 185, 129, 0.4), 0 4px 14px rgba(16, 185, 129, 0.3)',
+        'button-hover': '0 4px 8px rgba(0, 0, 0, 0.1)',
+        'button-active': '0 1px 4px rgba(0, 0, 0, 0.08)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
