@@ -37,8 +37,8 @@ export default function AppPage() {
           className="relative card-elevated p-8 md:p-12 text-center max-w-md w-full"
         >
           {/* Logo */}
-          <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mx-auto mb-6">
-            <Wallet className="w-8 h-8 text-brand-violet" />
+          <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 flex items-center justify-center mx-auto mb-6">
+            <Wallet className="w-8 h-8 text-brand-primary" />
           </div>
 
           <h1 className="text-2xl font-bold mb-3">Connect Your Wallet</h1>
@@ -88,7 +88,7 @@ export default function AppPage() {
             {/* Balance List */}
             <div className="card-elevated p-6">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-brand-violet/10 flex items-center justify-center text-xs font-bold text-brand-violet">
+                <span className="w-6 h-6 rounded-full bg-brand-primary/10 flex items-center justify-center text-xs font-bold text-brand-primary">
                   1
                 </span>
                 Select Chain
@@ -103,7 +103,7 @@ export default function AppPage() {
             {/* Destination */}
             <div className="card-elevated p-6">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-brand-violet/10 flex items-center justify-center text-xs font-bold text-brand-violet">
+                <span className="w-6 h-6 rounded-full bg-brand-primary/10 flex items-center justify-center text-xs font-bold text-brand-primary">
                   2
                 </span>
                 Destination
@@ -123,7 +123,7 @@ export default function AppPage() {
                 className="card-elevated p-6"
               >
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-brand-violet/10 flex items-center justify-center text-xs font-bold text-brand-violet">
+                  <span className="w-6 h-6 rounded-full bg-brand-primary/10 flex items-center justify-center text-xs font-bold text-brand-primary">
                     3
                   </span>
                   Review

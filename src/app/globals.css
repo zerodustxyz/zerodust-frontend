@@ -4,31 +4,31 @@
 
 @layer base {
   :root {
-    --background: 250 250 250;
+    --background: 250 248 245;
     --foreground: 24 24 27;
     --surface: 255 255 255;
-    --elevated: 244 244 245;
-    --primary: 16 185 129;
+    --elevated: 245 241 234;
+    --primary: 139 158 130;
     --primary-foreground: 255 255 255;
-    --secondary: 20 184 166;
+    --secondary: 196 180 154;
     --muted: 161 161 170;
-    --border: 228 228 231;
-    --success: 16 185 129;
+    --border: 235 228 216;
+    --success: 139 158 130;
     --warning: 245 158 11;
     --error: 244 63 94;
   }
 
   .dark {
-    --background: 10 10 11;
-    --foreground: 250 250 250;
-    --surface: 20 20 22;
-    --elevated: 28 28 31;
-    --primary: 16 185 129;
+    --background: 18 17 15;
+    --foreground: 250 248 245;
+    --surface: 28 26 23;
+    --elevated: 38 35 31;
+    --primary: 139 158 130;
     --primary-foreground: 255 255 255;
-    --secondary: 20 184 166;
-    --muted: 113 113 122;
-    --border: 42 42 46;
-    --success: 16 185 129;
+    --secondary: 196 180 154;
+    --muted: 120 115 108;
+    --border: 55 50 45;
+    --success: 139 158 130;
     --warning: 245 158 11;
     --error: 244 63 94;
   }
@@ -46,7 +46,7 @@
   }
 
   body {
-    @apply bg-light-bg text-zinc-900 dark:bg-dark-bg dark:text-zinc-100;
+    @apply bg-sand-50 text-zinc-900 dark:bg-dark-bg dark:text-zinc-100;
     @apply antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
@@ -87,9 +87,9 @@
   }
 
   .glass-card:hover {
-    @apply shadow-[0_16px_48px_rgba(16,185,129,0.15)] dark:shadow-[0_16px_48px_rgba(16,185,129,0.2)];
-    @apply border-brand-primary/30 dark:border-brand-primary/40;
-    transform: translateY(-4px) scale(1.01);
+    @apply shadow-[0_12px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.25)];
+    @apply border-brand-primary/25 dark:border-brand-primary/30;
+    transform: translateY(-2px);
   }
 
   /* Main sweep card - extra premium */
@@ -104,7 +104,7 @@
   .sweep-card::before {
     content: '';
     @apply absolute inset-0 rounded-3xl;
-    background: linear-gradient(135deg, rgba(16,185,129,0.03) 0%, rgba(20,184,166,0.03) 100%);
+    background: linear-gradient(135deg, rgba(139,158,130,0.03) 0%, rgba(196,180,154,0.03) 100%);
     pointer-events: none;
   }
 
@@ -127,7 +127,7 @@
   /* Gradient border card */
   .gradient-border-card {
     @apply relative p-[1px] rounded-3xl overflow-hidden;
-    background: linear-gradient(135deg, rgba(16,185,129,0.5) 0%, rgba(20,184,166,0.5) 100%);
+    background: linear-gradient(135deg, rgba(139,158,130,0.4) 0%, rgba(196,180,154,0.4) 100%);
   }
 
   .gradient-border-card > * {
@@ -146,12 +146,12 @@
   }
 
   .gradient-text-animated {
-    background: linear-gradient(135deg, #10B981 0%, #14B8A6 50%, #10B981 100%);
+    background: linear-gradient(135deg, #8B9E82 0%, #6B7E62 50%, #8B9E82 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: gradient-shift 3s ease infinite;
+    animation: gradient-shift 4s ease infinite;
   }
 
   @keyframes gradient-shift {
@@ -173,32 +173,26 @@
   .btn-primary {
     @apply btn py-3 px-6 rounded-xl;
     @apply bg-gradient-brand text-white;
-    @apply shadow-[0_4px_14px_rgba(16,185,129,0.4)];
-    @apply hover:shadow-[0_6px_20px_rgba(16,185,129,0.5)] hover:scale-[1.02];
-    @apply active:scale-[0.98] active:shadow-[0_2px_10px_rgba(16,185,129,0.4)];
+    @apply shadow-soft;
+    @apply hover:shadow-soft-lg hover:scale-[1.01];
+    @apply active:scale-[0.99] active:shadow-button-active;
   }
 
   .btn-primary-lg {
     @apply btn py-4 px-8 rounded-2xl text-lg;
     @apply bg-gradient-brand text-white;
-    @apply shadow-[0_4px_20px_rgba(16,185,129,0.4)];
-    @apply hover:shadow-[0_8px_30px_rgba(16,185,129,0.5)] hover:scale-[1.02];
-    @apply active:scale-[0.98];
+    @apply shadow-soft-lg;
+    @apply hover:shadow-soft-xl hover:scale-[1.01];
+    @apply active:scale-[0.99];
   }
 
-  /* Glowing button for CTAs */
-  .btn-glow {
+  /* Elevated button for CTAs */
+  .btn-elevated {
     @apply btn py-4 px-8 rounded-2xl text-lg font-bold;
     @apply bg-gradient-brand text-white;
-    @apply shadow-[0_0_20px_rgba(16,185,129,0.5),0_0_40px_rgba(16,185,129,0.3)];
-    @apply hover:shadow-[0_0_30px_rgba(16,185,129,0.6),0_0_60px_rgba(16,185,129,0.4)] hover:scale-[1.03];
-    @apply active:scale-[0.98];
-    animation: glow-pulse-btn 2s ease-in-out infinite;
-  }
-
-  @keyframes glow-pulse-btn {
-    0%, 100% { box-shadow: 0 0 20px rgba(16,185,129,0.5), 0 0 40px rgba(16,185,129,0.3); }
-    50% { box-shadow: 0 0 25px rgba(16,185,129,0.6), 0 0 50px rgba(16,185,129,0.4); }
+    @apply shadow-soft-lg;
+    @apply hover:shadow-soft-xl hover:scale-[1.02];
+    @apply active:scale-[0.99];
   }
 
   .btn-secondary {
@@ -300,9 +294,9 @@
 
   .chain-item-selected {
     @apply chain-item;
-    @apply bg-gradient-to-r from-brand-primary/10 to-brand-secondary/5;
+    @apply bg-gradient-to-r from-brand-primary/10 to-sand-200/50;
     @apply border-brand-primary/40 dark:border-brand-primary/50;
-    @apply shadow-[0_0_20px_rgba(16,185,129,0.1)];
+    @apply shadow-soft;
     @apply hover:border-brand-primary/50;
   }
 
@@ -346,18 +340,15 @@
   }
 
   .status-dot-success {
-    @apply status-dot bg-emerald-500;
-    box-shadow: 0 0 8px rgba(16,185,129,0.5);
+    @apply status-dot bg-brand-primary;
   }
 
   .status-dot-warning {
     @apply status-dot bg-amber-500;
-    box-shadow: 0 0 8px rgba(245,158,11,0.5);
   }
 
   .status-dot-error {
     @apply status-dot bg-rose-500;
-    box-shadow: 0 0 8px rgba(244,63,94,0.5);
   }
 
   .status-dot-muted {
@@ -439,8 +430,8 @@
   }
 
   .animated-orb {
-    @apply absolute rounded-full blur-3xl opacity-30 dark:opacity-20;
-    animation: float-orb 20s ease-in-out infinite;
+    @apply absolute rounded-full blur-3xl opacity-15 dark:opacity-10;
+    animation: float-orb 25s ease-in-out infinite;
   }
 
   .animated-orb-1 {
@@ -451,14 +442,14 @@
   }
 
   .animated-orb-2 {
-    @apply w-[500px] h-[500px] bg-brand-secondary;
+    @apply w-[500px] h-[500px] bg-sand-300;
     top: 50%;
     right: -150px;
     animation-delay: -5s;
   }
 
   .animated-orb-3 {
-    @apply w-[400px] h-[400px] bg-brand-light;
+    @apply w-[400px] h-[400px] bg-sand-400;
     bottom: -100px;
     left: 30%;
     animation-delay: -10s;
@@ -474,15 +465,15 @@
   /* Grid background pattern */
   .grid-pattern {
     background-image:
-      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px);
+      linear-gradient(rgba(139,158,130,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,158,130,0.04) 1px, transparent 1px);
     background-size: 60px 60px;
   }
 
   .dark .grid-pattern {
     background-image:
-      linear-gradient(rgba(16,185,129,0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(16,185,129,0.05) 1px, transparent 1px);
+      linear-gradient(rgba(139,158,130,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,158,130,0.06) 1px, transparent 1px);
   }
 
   /* ========================================
@@ -518,13 +509,13 @@
     @apply bg-gradient-brand text-white;
     @apply flex items-center justify-center;
     @apply font-bold;
-    @apply shadow-[0_4px_14px_rgba(16,185,129,0.4)];
+    @apply shadow-soft;
     @apply transition-all duration-300;
   }
 
   .step-card:hover .step-number {
-    @apply shadow-[0_6px_20px_rgba(16,185,129,0.5)];
-    transform: scale(1.05);
+    @apply shadow-soft-lg;
+    transform: scale(1.03);
   }
 
   /* Step connector lines */
@@ -568,7 +559,7 @@
   .feature-card::before {
     content: '';
     @apply absolute inset-0 rounded-2xl opacity-0;
-    background: linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(20,184,166,0.05) 100%);
+    background: linear-gradient(135deg, rgba(139,158,130,0.04) 0%, rgba(196,180,154,0.04) 100%);
     pointer-events: none;
     transition: opacity 0.3s ease;
   }
@@ -578,20 +569,20 @@
   }
 
   .feature-card:hover {
-    @apply shadow-[0_16px_48px_rgba(16,185,129,0.15)] dark:shadow-[0_16px_48px_rgba(16,185,129,0.2)];
-    @apply border-brand-primary/30 dark:border-brand-primary/40;
-    transform: translateY(-6px);
+    @apply shadow-[0_12px_36px_rgba(0,0,0,0.1)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.25)];
+    @apply border-brand-primary/25 dark:border-brand-primary/35;
+    transform: translateY(-4px);
   }
 
   .feature-card-icon {
     @apply w-12 h-12 rounded-xl bg-gradient-brand flex items-center justify-center flex-shrink-0;
-    @apply shadow-lg shadow-brand-primary/25;
+    @apply shadow-soft-lg;
     @apply transition-all duration-300;
   }
 
   .feature-card:hover .feature-card-icon {
-    @apply shadow-brand-primary/40;
-    transform: scale(1.1);
+    @apply shadow-soft-xl;
+    transform: scale(1.05);
   }
 }
 
@@ -616,7 +607,7 @@
   .gradient-border::before {
     content: '';
     @apply absolute inset-0 rounded-2xl p-px;
-    background: linear-gradient(135deg, #10B981 0%, #14B8A6 100%);
+    background: linear-gradient(135deg, #8B9E82 0%, #C4B49A 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -655,12 +646,12 @@
 
   /* Gradient shadow */
   .gradient-shadow {
-    box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.25);
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
   }
 
-  /* Text shadow for headings */
-  .text-glow {
-    text-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+  /* Text shadow for headings - subtle */
+  .text-emphasis {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   /* Improved body text readability */
@@ -673,9 +664,9 @@
   }
 }
 
-/* RainbowKit customization - updated to emerald */
+/* RainbowKit customization - sage & sand */
 [data-rk] {
-  --rk-colors-accentColor: #10B981;
+  --rk-colors-accentColor: #8B9E82;
   --rk-colors-accentColorForeground: white;
   --rk-radii-modal: 1.5rem;
   --rk-radii-menuButton: 1rem;

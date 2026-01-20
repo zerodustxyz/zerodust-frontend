@@ -37,15 +37,18 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-light-border dark:border-dark-border bg-light-surface/50 dark:bg-dark-surface/50">
+    <footer className="border-t border-sand-200 dark:border-dark-border bg-sand-50/50 dark:bg-dark-surface/50">
       <div className="container mx-auto px-4">
         {/* Main footer content */}
         <div className="py-12 md:py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Brand column */}
             <div className="lg:col-span-1">
-              <Link href="/" className="flex items-center gap-2 mb-4">
-                <span className="text-xl font-bold gradient-text">ZeroDust</span>
+              <Link href="/" className="inline-block mb-4">
+                <span className="text-xl font-bold tracking-tight">
+                  <span className="text-brand-dark dark:text-brand-light">Zero</span>
+                  <span className="text-sand-600 dark:text-sand-400">Dust</span>
+                </span>
               </Link>
               <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 max-w-xs">
                 Sweep your leftover balance to zero. Exit any blockchain without leaving dust behind.
