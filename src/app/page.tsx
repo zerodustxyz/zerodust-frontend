@@ -210,8 +210,8 @@ export default function Home() {
                   width: `${3 + (i % 3) * 2}px`,
                   height: `${3 + (i % 3) * 2}px`,
                   background: i % 2 === 0
-                    ? 'rgba(139, 158, 130, 0.3)'
-                    : 'rgba(196, 180, 154, 0.25)',
+                    ? 'rgba(196, 180, 154, 0.4)'
+                    : 'rgba(221, 210, 192, 0.35)',
                 }}
                 animate={{
                   y: [0, -40, 0],
@@ -309,10 +309,10 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
             className="max-w-[440px] mx-auto"
           >
-            {/* Sweep Card - Clean card with subtle border */}
-            <div className="relative p-[1px] rounded-3xl bg-gradient-to-br from-brand-primary/30 via-sand-300/20 to-brand-primary/30">
+            {/* Sweep Card - Clean card with green border */}
+            <div className="relative p-[1px] rounded-3xl bg-gradient-to-br from-brand-primary/40 via-brand-secondary/30 to-brand-primary/40">
               {/* Subtle shadow behind card */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary/5 via-sand-300/5 to-brand-primary/5 rounded-3xl blur-xl opacity-50" />
+              <div className="absolute -inset-1 bg-brand-primary/5 rounded-3xl blur-xl opacity-50" />
               <div className="sweep-card sweep-card-enter relative">
               {/* Header */}
               <div className="p-5 pb-0">

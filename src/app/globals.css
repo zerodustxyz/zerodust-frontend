@@ -8,12 +8,12 @@
     --foreground: 24 24 27;
     --surface: 255 255 255;
     --elevated: 245 241 234;
-    --primary: 139 158 130;
+    --primary: 34 197 94;
     --primary-foreground: 255 255 255;
     --secondary: 196 180 154;
     --muted: 161 161 170;
     --border: 235 228 216;
-    --success: 139 158 130;
+    --success: 34 197 94;
     --warning: 245 158 11;
     --error: 244 63 94;
   }
@@ -23,12 +23,12 @@
     --foreground: 250 248 245;
     --surface: 28 26 23;
     --elevated: 38 35 31;
-    --primary: 139 158 130;
+    --primary: 34 197 94;
     --primary-foreground: 255 255 255;
     --secondary: 196 180 154;
     --muted: 120 115 108;
     --border: 55 50 45;
-    --success: 139 158 130;
+    --success: 34 197 94;
     --warning: 245 158 11;
     --error: 244 63 94;
   }
@@ -104,7 +104,7 @@
   .sweep-card::before {
     content: '';
     @apply absolute inset-0 rounded-3xl;
-    background: linear-gradient(135deg, rgba(139,158,130,0.03) 0%, rgba(196,180,154,0.03) 100%);
+    background: linear-gradient(135deg, rgba(34,197,94,0.02) 0%, rgba(34,197,94,0.01) 100%);
     pointer-events: none;
   }
 
@@ -127,7 +127,7 @@
   /* Gradient border card */
   .gradient-border-card {
     @apply relative p-[1px] rounded-3xl overflow-hidden;
-    background: linear-gradient(135deg, rgba(139,158,130,0.4) 0%, rgba(196,180,154,0.4) 100%);
+    background: linear-gradient(135deg, rgba(34,197,94,0.4) 0%, rgba(22,163,74,0.4) 100%);
   }
 
   .gradient-border-card > * {
@@ -146,7 +146,7 @@
   }
 
   .gradient-text-animated {
-    background: linear-gradient(135deg, #8B9E82 0%, #6B7E62 50%, #8B9E82 100%);
+    background: linear-gradient(135deg, #22C55E 0%, #15803D 50%, #22C55E 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -294,7 +294,7 @@
 
   .chain-item-selected {
     @apply chain-item;
-    @apply bg-gradient-to-r from-brand-primary/10 to-sand-200/50;
+    @apply bg-brand-primary/10;
     @apply border-brand-primary/40 dark:border-brand-primary/50;
     @apply shadow-soft;
     @apply hover:border-brand-primary/50;
@@ -430,26 +430,26 @@
   }
 
   .animated-orb {
-    @apply absolute rounded-full blur-3xl opacity-15 dark:opacity-10;
+    @apply absolute rounded-full blur-3xl opacity-20 dark:opacity-15;
     animation: float-orb 25s ease-in-out infinite;
   }
 
   .animated-orb-1 {
-    @apply w-[600px] h-[600px] bg-brand-primary;
+    @apply w-[600px] h-[600px] bg-sand-300;
     top: -200px;
     left: -100px;
     animation-delay: 0s;
   }
 
   .animated-orb-2 {
-    @apply w-[500px] h-[500px] bg-sand-300;
+    @apply w-[500px] h-[500px] bg-sand-200;
     top: 50%;
     right: -150px;
     animation-delay: -5s;
   }
 
   .animated-orb-3 {
-    @apply w-[400px] h-[400px] bg-sand-400;
+    @apply w-[400px] h-[400px] bg-sand-300;
     bottom: -100px;
     left: 30%;
     animation-delay: -10s;
@@ -465,15 +465,15 @@
   /* Grid background pattern */
   .grid-pattern {
     background-image:
-      linear-gradient(rgba(139,158,130,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(139,158,130,0.04) 1px, transparent 1px);
+      linear-gradient(rgba(196,180,154,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,180,154,0.08) 1px, transparent 1px);
     background-size: 60px 60px;
   }
 
   .dark .grid-pattern {
     background-image:
-      linear-gradient(rgba(139,158,130,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(139,158,130,0.06) 1px, transparent 1px);
+      linear-gradient(rgba(196,180,154,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,180,154,0.06) 1px, transparent 1px);
   }
 
   /* ========================================
@@ -559,7 +559,7 @@
   .feature-card::before {
     content: '';
     @apply absolute inset-0 rounded-2xl opacity-0;
-    background: linear-gradient(135deg, rgba(139,158,130,0.04) 0%, rgba(196,180,154,0.04) 100%);
+    background: linear-gradient(135deg, rgba(34,197,94,0.04) 0%, rgba(34,197,94,0.02) 100%);
     pointer-events: none;
     transition: opacity 0.3s ease;
   }
@@ -607,7 +607,7 @@
   .gradient-border::before {
     content: '';
     @apply absolute inset-0 rounded-2xl p-px;
-    background: linear-gradient(135deg, #8B9E82 0%, #C4B49A 100%);
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -664,9 +664,9 @@
   }
 }
 
-/* RainbowKit customization - sage & sand */
+/* RainbowKit customization - green */
 [data-rk] {
-  --rk-colors-accentColor: #8B9E82;
+  --rk-colors-accentColor: #22C55E;
   --rk-colors-accentColorForeground: white;
   --rk-radii-modal: 1.5rem;
   --rk-radii-menuButton: 1rem;

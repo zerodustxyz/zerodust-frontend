@@ -10,13 +10,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand colors - Dusty Sage & Sand palette
+        // Brand colors - Fresh Green (no glow, but strong)
         brand: {
-          primary: '#8B9E82',      // Dusty sage - Main brand color
-          secondary: '#C4B49A',    // Sand/beige - Secondary accent
-          light: '#A8B8A0',        // Lighter sage
-          dark: '#6B7E62',         // Darker sage
-          muted: '#CBD5C5',        // Pale sage
+          primary: '#22C55E',      // Green 500 - Main brand color
+          secondary: '#16A34A',    // Green 600 - Secondary
+          light: '#4ADE80',        // Green 400 - Lighter
+          dark: '#15803D',         // Green 700 - Darker
+          muted: '#86EFAC',        // Green 300 - Muted
         },
         // Sand/beige palette
         sand: {
@@ -54,32 +54,32 @@ const config: Config = {
         },
       },
       backgroundImage: {
-        // Brand gradients - Sage & Sand
-        'gradient-brand': 'linear-gradient(135deg, #8B9E82 0%, #A8B8A0 100%)',
-        'gradient-brand-hover': 'linear-gradient(135deg, #6B7E62 0%, #8B9E82 100%)',
-        'gradient-brand-vertical': 'linear-gradient(180deg, #8B9E82 0%, #A8B8A0 100%)',
-        'gradient-brand-reverse': 'linear-gradient(135deg, #A8B8A0 0%, #8B9E82 100%)',
-        'gradient-brand-vibrant': 'linear-gradient(135deg, #A8B8A0 0%, #C4B49A 100%)',
-        // Sand gradients
+        // Brand gradients - Green only (no mixing with sand)
+        'gradient-brand': 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
+        'gradient-brand-hover': 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)',
+        'gradient-brand-vertical': 'linear-gradient(180deg, #22C55E 0%, #16A34A 100%)',
+        'gradient-brand-reverse': 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)',
+        'gradient-brand-vibrant': 'linear-gradient(135deg, #4ADE80 0%, #22C55E 100%)',
+        // Sand gradients - Sand only (separate from green)
         'gradient-sand': 'linear-gradient(135deg, #C4B49A 0%, #DDD2C0 100%)',
-        'gradient-sage-sand': 'linear-gradient(135deg, #8B9E82 0%, #C4B49A 100%)',
+        'gradient-sand-subtle': 'linear-gradient(135deg, #F5F1EA 0%, #EBE4D8 100%)',
         // Background effects - subtle, no glow
         'gradient-radial': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
         'gradient-radial-top': 'radial-gradient(ellipse at top, var(--tw-gradient-stops))',
-        'gradient-subtle': 'radial-gradient(circle at 50% 0%, rgba(139, 158, 130, 0.08) 0%, transparent 50%)',
-        'gradient-subtle-bottom': 'radial-gradient(circle at 50% 100%, rgba(196, 180, 154, 0.06) 0%, transparent 50%)',
-        // Mesh gradients for hero - muted
+        'gradient-subtle': 'radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.06) 0%, transparent 50%)',
+        'gradient-subtle-bottom': 'radial-gradient(circle at 50% 100%, rgba(196, 180, 154, 0.08) 0%, transparent 50%)',
+        // Mesh gradients for hero - sand tones for background warmth
         'mesh-gradient': `
-          radial-gradient(at 40% 20%, rgba(139, 158, 130, 0.12) 0px, transparent 50%),
-          radial-gradient(at 80% 0%, rgba(196, 180, 154, 0.10) 0px, transparent 50%),
-          radial-gradient(at 0% 50%, rgba(139, 158, 130, 0.08) 0px, transparent 50%),
-          radial-gradient(at 80% 50%, rgba(196, 180, 154, 0.06) 0px, transparent 50%),
-          radial-gradient(at 0% 100%, rgba(168, 184, 160, 0.05) 0px, transparent 50%)
+          radial-gradient(at 40% 20%, rgba(196, 180, 154, 0.15) 0px, transparent 50%),
+          radial-gradient(at 80% 0%, rgba(221, 210, 192, 0.12) 0px, transparent 50%),
+          radial-gradient(at 0% 50%, rgba(196, 180, 154, 0.10) 0px, transparent 50%),
+          radial-gradient(at 80% 50%, rgba(235, 228, 216, 0.08) 0px, transparent 50%),
+          radial-gradient(at 0% 100%, rgba(221, 210, 192, 0.06) 0px, transparent 50%)
         `,
         'mesh-gradient-light': `
-          radial-gradient(at 40% 20%, rgba(139, 158, 130, 0.05) 0px, transparent 50%),
-          radial-gradient(at 80% 0%, rgba(196, 180, 154, 0.04) 0px, transparent 50%),
-          radial-gradient(at 0% 50%, rgba(139, 158, 130, 0.03) 0px, transparent 50%)
+          radial-gradient(at 40% 20%, rgba(196, 180, 154, 0.06) 0px, transparent 50%),
+          radial-gradient(at 80% 0%, rgba(221, 210, 192, 0.05) 0px, transparent 50%),
+          radial-gradient(at 0% 50%, rgba(196, 180, 154, 0.04) 0px, transparent 50%)
         `,
         // Noise texture
         'noise': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")",
