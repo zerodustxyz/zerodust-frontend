@@ -8,12 +8,12 @@
     --foreground: 24 24 27;
     --surface: 255 255 255;
     --elevated: 245 241 234;
-    --primary: 34 197 94;
+    --primary: 23 59 12;
     --primary-foreground: 255 255 255;
     --secondary: 196 180 154;
     --muted: 161 161 170;
     --border: 235 228 216;
-    --success: 34 197 94;
+    --success: 23 59 12;
     --warning: 245 158 11;
     --error: 244 63 94;
   }
@@ -23,12 +23,12 @@
     --foreground: 250 248 245;
     --surface: 28 26 23;
     --elevated: 38 35 31;
-    --primary: 34 197 94;
+    --primary: 45 90 26;
     --primary-foreground: 255 255 255;
     --secondary: 196 180 154;
     --muted: 120 115 108;
     --border: 55 50 45;
-    --success: 34 197 94;
+    --success: 45 90 26;
     --warning: 245 158 11;
     --error: 244 63 94;
   }
@@ -104,7 +104,7 @@
   .sweep-card::before {
     content: '';
     @apply absolute inset-0 rounded-3xl;
-    background: linear-gradient(135deg, rgba(34,197,94,0.02) 0%, rgba(34,197,94,0.01) 100%);
+    background: linear-gradient(135deg, rgba(23,59,12,0.03) 0%, rgba(23,59,12,0.01) 100%);
     pointer-events: none;
   }
 
@@ -127,7 +127,7 @@
   /* Gradient border card */
   .gradient-border-card {
     @apply relative p-[1px] rounded-3xl overflow-hidden;
-    background: linear-gradient(135deg, rgba(34,197,94,0.4) 0%, rgba(22,163,74,0.4) 100%);
+    background: linear-gradient(135deg, rgba(23,59,12,0.5) 0%, rgba(45,90,26,0.5) 100%);
   }
 
   .gradient-border-card > * {
@@ -146,7 +146,7 @@
   }
 
   .gradient-text-animated {
-    background: linear-gradient(135deg, #22C55E 0%, #15803D 50%, #22C55E 100%);
+    background: linear-gradient(135deg, #2D5A1A 0%, #173B0C 50%, #2D5A1A 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -559,7 +559,7 @@
   .feature-card::before {
     content: '';
     @apply absolute inset-0 rounded-2xl opacity-0;
-    background: linear-gradient(135deg, rgba(34,197,94,0.04) 0%, rgba(34,197,94,0.02) 100%);
+    background: linear-gradient(135deg, rgba(23,59,12,0.05) 0%, rgba(23,59,12,0.02) 100%);
     pointer-events: none;
     transition: opacity 0.3s ease;
   }
@@ -607,7 +607,7 @@
   .gradient-border::before {
     content: '';
     @apply absolute inset-0 rounded-2xl p-px;
-    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+    background: linear-gradient(135deg, #173B0C 0%, #2D5A1A 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -664,9 +664,9 @@
   }
 }
 
-/* RainbowKit customization - green */
+/* RainbowKit customization - deep forest */
 [data-rk] {
-  --rk-colors-accentColor: #22C55E;
+  --rk-colors-accentColor: #173B0C;
   --rk-colors-accentColorForeground: white;
   --rk-radii-modal: 1.5rem;
   --rk-radii-menuButton: 1rem;

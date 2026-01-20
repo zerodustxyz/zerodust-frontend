@@ -45,7 +45,7 @@ export function Header() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <span className="text-brand-primary">Zero</span>
+              <span className="text-brand-primary dark:text-brand-light">Zero</span>
               <span className="text-sand-500 dark:text-sand-400">Dust</span>
             </motion.span>
           </Link>

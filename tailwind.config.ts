@@ -10,13 +10,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand colors - Fresh Green (no glow, but strong)
+        // Brand colors - Deep Forest Olive
         brand: {
-          primary: '#22C55E',      // Green 500 - Main brand color
-          secondary: '#16A34A',    // Green 600 - Secondary
-          light: '#4ADE80',        // Green 400 - Lighter
-          dark: '#15803D',         // Green 700 - Darker
-          muted: '#86EFAC',        // Green 300 - Muted
+          primary: '#173B0C',      // Deep forest - main brand
+          light: '#2D5A1A',        // Lighter - for dark mode
+          lighter: '#3D7A2A',      // Hover states
+          dark: '#0F2808',         // Even deeper
+          muted: '#4A8A3A',        // Muted accent
         },
         // Sand/beige palette
         sand: {
@@ -54,19 +54,19 @@ const config: Config = {
         },
       },
       backgroundImage: {
-        // Brand gradients - Green only (no mixing with sand)
-        'gradient-brand': 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
-        'gradient-brand-hover': 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)',
-        'gradient-brand-vertical': 'linear-gradient(180deg, #22C55E 0%, #16A34A 100%)',
-        'gradient-brand-reverse': 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)',
-        'gradient-brand-vibrant': 'linear-gradient(135deg, #4ADE80 0%, #22C55E 100%)',
+        // Brand gradients - Deep Forest Olive (no mixing with sand)
+        'gradient-brand': 'linear-gradient(135deg, #173B0C 0%, #2D5A1A 100%)',
+        'gradient-brand-hover': 'linear-gradient(135deg, #2D5A1A 0%, #3D7A2A 100%)',
+        'gradient-brand-vertical': 'linear-gradient(180deg, #173B0C 0%, #2D5A1A 100%)',
+        'gradient-brand-reverse': 'linear-gradient(135deg, #2D5A1A 0%, #173B0C 100%)',
+        'gradient-brand-vibrant': 'linear-gradient(135deg, #2D5A1A 0%, #3D7A2A 100%)',
         // Sand gradients - Sand only (separate from green)
         'gradient-sand': 'linear-gradient(135deg, #C4B49A 0%, #DDD2C0 100%)',
         'gradient-sand-subtle': 'linear-gradient(135deg, #F5F1EA 0%, #EBE4D8 100%)',
         // Background effects - subtle, no glow
         'gradient-radial': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
         'gradient-radial-top': 'radial-gradient(ellipse at top, var(--tw-gradient-stops))',
-        'gradient-subtle': 'radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.06) 0%, transparent 50%)',
+        'gradient-subtle': 'radial-gradient(circle at 50% 0%, rgba(23, 59, 12, 0.08) 0%, transparent 50%)',
         'gradient-subtle-bottom': 'radial-gradient(circle at 50% 100%, rgba(196, 180, 154, 0.08) 0%, transparent 50%)',
         // Mesh gradients for hero - sand tones for background warmth
         'mesh-gradient': `
