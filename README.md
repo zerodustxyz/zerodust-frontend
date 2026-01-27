@@ -20,8 +20,9 @@ ZeroDust is a Web3 application that enables users to sweep 100% of their native 
 - Destination address input with wallet auto-fill
 
 ### Network Support
-- **Testnets**: Sepolia, Base Sepolia, OP Sepolia, Arbitrum Sepolia, Polygon Amoy, BSC Testnet
-- **Mainnets**: Ethereum, Base, Optimism, Arbitrum, Polygon, BNB Chain, Gnosis (coming soon)
+- **Testnets**: Sepolia, Base Sepolia, OP Sepolia, Arbitrum Sepolia, Polygon Amoy, BSC Testnet + 40 more
+- **Mainnets (26 chains)**: Base, Arbitrum, Polygon, BSC, Zora, Optimism, Gnosis, Scroll, Linea, Mode, Mantle, Celo, Blast, Unichain, World Chain, Berachain, Ink, Plasma, BOB, Story, Fraxtal, Superseed, Apechain, Sei, Sonic, Soneium
+- **Cross-chain**: 650 routes via Gas.zip integration
 - Network mode toggle to switch between mainnet/testnet views
 
 ### Fee System
