@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Check, X, ExternalLink, AlertTriangle, Info, Sparkles, ArrowRight } from 'lucide-react';
+import { Loader2, Check, ExternalLink, AlertTriangle, Info, Sparkles, ArrowRight } from 'lucide-react';
 import { useWalletClient, useAccount, useSwitchChain, usePublicClient } from 'wagmi';
 import { chainMeta } from '@/config/wagmi';
 import { api, QuoteV3Response, ApiError, SWEEP_INTENT_TYPES } from '@/services/api';
+import { ChainIcon } from '@/components/ui/chain-icon';
 
 // EIP-7702 wallet compatibility status
 type WalletCompatibility = 'unknown' | 'checking' | 'compatible' | 'incompatible' | 'partial';
@@ -60,13 +61,47 @@ function detectWallet(): WalletInfo {
 }
 
 // V3 contract addresses per chain
+// Mainnet: 0x3732398281d0606aCB7EC1D490dFB0591BE4c4f2 (CREATE2 deterministic, 26 chains)
+// Testnet: Various addresses per chain
+const V3_MAINNET_ADDRESS: `0x${string}` = '0x3732398281d0606aCB7EC1D490dFB0591BE4c4f2';
+
 const V3_CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
-  11155111: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7',
-  84532: '0x3f544C958A43E40d8C05e8233EAf502279A403E5',
-  11155420: '0x8b2c2330B6FaDcC51d4619fdAf8843870c6a722c',
-  421614: '0x79B214978eCae1ABe3Fd50A2BE9E158Aa3034E02',
-  80002: '0xA90B6700B3788F73E481Af1eCeeE9F51513a848b',
-  97: '0x8b2c2330B6FaDcC51d4619fdAf8843870c6a722c',
+  // Mainnets (26 chains) - all use the same CREATE2 address
+  1: V3_MAINNET_ADDRESS,        // Ethereum
+  10: V3_MAINNET_ADDRESS,       // Optimism
+  56: V3_MAINNET_ADDRESS,       // BSC
+  100: V3_MAINNET_ADDRESS,      // Gnosis
+  130: V3_MAINNET_ADDRESS,      // Unichain
+  137: V3_MAINNET_ADDRESS,      // Polygon
+  146: V3_MAINNET_ADDRESS,      // Sonic
+  196: V3_MAINNET_ADDRESS,      // X Layer
+  252: V3_MAINNET_ADDRESS,      // Fraxtal
+  480: V3_MAINNET_ADDRESS,      // World Chain
+  1329: V3_MAINNET_ADDRESS,     // Sei
+  1514: V3_MAINNET_ADDRESS,     // Story
+  1868: V3_MAINNET_ADDRESS,     // Soneium
+  5000: V3_MAINNET_ADDRESS,     // Mantle
+  5330: V3_MAINNET_ADDRESS,     // Superseed
+  8453: V3_MAINNET_ADDRESS,     // Base
+  9745: V3_MAINNET_ADDRESS,     // Plasma
+  33139: V3_MAINNET_ADDRESS,    // ApeChain
+  34443: V3_MAINNET_ADDRESS,    // Mode
+  42161: V3_MAINNET_ADDRESS,    // Arbitrum
+  42220: V3_MAINNET_ADDRESS,    // Celo
+  57073: V3_MAINNET_ADDRESS,    // Ink
+  59144: V3_MAINNET_ADDRESS,    // Linea
+  60808: V3_MAINNET_ADDRESS,    // BOB
+  80094: V3_MAINNET_ADDRESS,    // Berachain
+  81457: V3_MAINNET_ADDRESS,    // Blast
+  534352: V3_MAINNET_ADDRESS,   // Scroll
+  7777777: V3_MAINNET_ADDRESS,  // Zora
+  // Testnets
+  11155111: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7', // Sepolia
+  84532: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7',    // Base Sepolia
+  11155420: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7', // OP Sepolia
+  421614: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7',   // Arbitrum Sepolia
+  80002: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7',    // Polygon Amoy
+  97: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7',       // BSC Testnet
 };
 
 interface SweepButtonProps {
@@ -74,15 +109,19 @@ interface SweepButtonProps {
   destinationAddress: string;
   quote: QuoteV3Response | null;
   disabled?: boolean;
+  onSweepComplete?: () => void;
+  onSweepSuccess?: () => void;
 }
 
-type SweepStatus = 'idle' | 'signing' | 'submitting' | 'processing' | 'success' | 'error';
+type SweepStatus = 'idle' | 'signing' | 'submitting' | 'processing' | 'bridging' | 'success' | 'error';
 
 export function SweepButton({
   selectedChain,
   destinationAddress,
   quote,
   disabled,
+  onSweepComplete,
+  onSweepSuccess,
 }: SweepButtonProps) {
   const { address, chainId: currentChainId } = useAccount();
   const { data: walletClient } = useWalletClient();
@@ -92,10 +131,32 @@ export function SweepButton({
   const [status, setStatus] = useState<SweepStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [destinationTxHash, setDestinationTxHash] = useState<string | null>(null);
+  const [destinationChainId, setDestinationChainId] = useState<number | null>(null);
+  const [isCrossChain, setIsCrossChain] = useState<boolean>(false);
+  const [userReceived, setUserReceived] = useState<string | null>(null);
   const [walletInfo, setWalletInfo] = useState<WalletInfo>({ name: 'Unknown', compatibility: 'checking' });
 
   const chainInfo = selectedChain ? chainMeta[selectedChain] : null;
   const contractAddress = selectedChain ? V3_CONTRACT_ADDRESSES[selectedChain] : null;
+
+  // Helper to truncate address for display
+  const truncateAddress = (addr: string) => {
+    if (!addr || addr.length < 10) return addr;
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  // Helper to format received amount
+  const formatReceived = (wei: string, chainId: number) => {
+    try {
+      const value = BigInt(wei);
+      const eth = Number(value) / 1e18;
+      const symbol = chainMeta[chainId]?.symbol || 'ETH';
+      return `${eth.toFixed(6)} ${symbol}`;
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     if (walletClient) {
@@ -103,6 +164,14 @@ export function SweepButton({
       setWalletInfo(detected);
     }
   }, [walletClient]);
+
+  // Reset to idle when user selects a different chain (after a sweep completes)
+  useEffect(() => {
+    // Only reset if sweep was completed/errored and user selects a new chain
+    if ((status === 'success' || status === 'error') && selectedChain !== null) {
+      reset();
+    }
+  }, [selectedChain]);
 
   const signEIP7702Authorization = async (
     chainId: number,
@@ -131,6 +200,48 @@ export function SweepButton({
     };
   };
 
+  // Sign multiple EIP-7702 authorizations in batch (reduces user interactions)
+  const signBatchEIP7702Authorizations = async (
+    chainId: number,
+    authorizations: Array<{
+      contractAddress: `0x${string}`;
+      nonce: number;
+      label?: string;
+    }>
+  ) => {
+    if (!walletClient || !address) throw new Error('Wallet not connected');
+
+    const results = await (window.ethereum as any).request({
+      method: 'wallet_signBatchAuthorization',
+      params: [{
+        from: address,
+        authorizations: authorizations.map(auth => ({
+          contractAddress: auth.contractAddress,
+          chainId: chainId,
+          nonce: auth.nonce,
+          label: auth.label,
+        })),
+      }],
+    });
+
+    return results.map((result: any) => ({
+      chainId: typeof result.chainId === 'string' ? parseInt(result.chainId, 16) : result.chainId,
+      contractAddress: result.address,
+      nonce: typeof result.nonce === 'string' ? parseInt(result.nonce, 16) : result.nonce,
+      yParity: typeof result.yParity === 'string' ? parseInt(result.yParity, 16) : result.yParity,
+      r: result.r,
+      s: result.s,
+    }));
+  };
+
+  // Check if wallet supports batch authorization signing
+  const supportsBatchAuth = async (): Promise<boolean> => {
+    if (typeof window === 'undefined' || !window.ethereum) return false;
+    const provider = window.ethereum as any;
+    // Rabby fork supports batch signing
+    return provider.isRabby === true;
+  };
+
   const handleSweep = async () => {
     if (disabled || !quote || !walletClient || !address || !selectedChain) return;
 
@@ -153,8 +264,41 @@ export function SweepButton({
         }
       }
 
-      const userNonce = await publicClient!.getTransactionCount({ address });
-      const eip7702Auth = await signEIP7702Authorization(selectedChain, contractAddress, userNonce);
+      // Use authNonce from the quote - it's the transaction count fetched from the correct chain by the backend
+      // Don't use publicClient.getTransactionCount as it might be stale or from wrong chain after chain switch
+      const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`;
+
+      let eip7702Auth;
+      let revokeAuth;
+
+      // Try batch signing first (reduces user interactions from 3 to 2)
+      const canBatchSign = await supportsBatchAuth();
+      if (canBatchSign) {
+        // Sign both authorizations in one user interaction
+        const [sweepAuthResult, revokeAuthResult] = await signBatchEIP7702Authorizations(
+          selectedChain,
+          [
+            {
+              contractAddress: contractAddress,
+              nonce: quote.authNonce,
+              label: 'Delegate to ZeroDust',
+            },
+            {
+              contractAddress: ZERO_ADDRESS,
+              nonce: quote.authNonce + 1,
+              label: 'Revoke Delegation',
+            },
+          ]
+        );
+        eip7702Auth = sweepAuthResult;
+        revokeAuth = revokeAuthResult;
+      } else {
+        // Fallback to individual signing (3 signatures total)
+        eip7702Auth = await signEIP7702Authorization(selectedChain, contractAddress, quote.authNonce);
+        // Sign revoke authorization (delegates to address(0) to remove delegation after sweep)
+        // Revoke nonce must be sweep nonce + 1 (executed after sweep completes)
+        revokeAuth = await signEIP7702Authorization(selectedChain, ZERO_ADDRESS, quote.authNonce + 1);
+      }
 
       const domain = api.buildEIP712Domain(selectedChain, address);
       const message = api.buildSweepIntentMessage(quote, address);
@@ -172,18 +316,40 @@ export function SweepButton({
         quoteId: quote.quoteId,
         signature: sweepSignature,
         eip7702Authorization: eip7702Auth,
+        revokeAuthorization: revokeAuth,
       });
 
       setStatus('processing');
+
+      // Check if this is a cross-chain sweep (mode 1 = call)
+      const crossChain = quote.mode === 1;
+      setIsCrossChain(crossChain);
+      if (crossChain && quote.intent?.destinationChainId) {
+        setDestinationChainId(parseInt(quote.intent.destinationChainId));
+      }
 
       const finalStatus = await api.pollSweepStatus(sweepResponse.sweepId, (update) => {
         if (update.txHash) {
           setTxHash(update.txHash);
         }
+        if (update.destinationTxHash) {
+          setDestinationTxHash(update.destinationTxHash);
+        }
+        if (update.userReceived) {
+          setUserReceived(update.userReceived);
+        }
       });
 
       if (finalStatus.status === 'completed') {
         setStatus('success');
+        setTxHash(finalStatus.txHash || null);
+        setDestinationTxHash(finalStatus.destinationTxHash || null);
+        setUserReceived(finalStatus.userReceived || null);
+        // Notify parent that sweep succeeded (for balance refresh)
+        onSweepSuccess?.();
+      } else if (finalStatus.status === 'bridging') {
+        // Cross-chain sweep: source tx confirmed, bridging in progress
+        setStatus('bridging');
         setTxHash(finalStatus.txHash || null);
       } else {
         throw new Error(finalStatus.error || 'Sweep failed');
@@ -217,12 +383,47 @@ export function SweepButton({
     setStatus('idle');
     setError(null);
     setTxHash(null);
+    setDestinationTxHash(null);
+    setDestinationChainId(null);
+    setIsCrossChain(false);
+    setUserReceived(null);
   };
 
-  const getExplorerUrl = (hash: string | null) => {
-    if (!hash || !selectedChain) return '#';
+  const getExplorerUrl = (hash: string | null, chainId?: number | null) => {
+    const targetChain = chainId ?? selectedChain;
+    if (!hash || !targetChain) return '#';
 
     const explorers: Record<number, string> = {
+      // Mainnets
+      1: 'https://etherscan.io/tx/',
+      10: 'https://optimistic.etherscan.io/tx/',
+      56: 'https://bscscan.com/tx/',
+      100: 'https://gnosisscan.io/tx/',
+      130: 'https://unichain.blockscout.com/tx/',
+      137: 'https://polygonscan.com/tx/',
+      146: 'https://sonicscan.org/tx/',
+      196: 'https://www.okx.com/web3/explorer/xlayer/tx/',
+      252: 'https://fraxscan.com/tx/',
+      480: 'https://worldchain-mainnet.explorer.alchemy.com/tx/',
+      1329: 'https://seitrace.com/tx/',
+      1514: 'https://www.storyscan.io/tx/',
+      1868: 'https://soneium.blockscout.com/tx/',
+      5000: 'https://mantlescan.xyz/tx/',
+      5330: 'https://explorer.superseed.xyz/tx/',
+      8453: 'https://basescan.org/tx/',
+      9745: 'https://plasmascan.to/tx/',
+      33139: 'https://apechain.calderaexplorer.xyz/tx/',
+      34443: 'https://explorer.mode.network/tx/',
+      42161: 'https://arbiscan.io/tx/',
+      42220: 'https://celoscan.io/tx/',
+      57073: 'https://explorer.inkonchain.com/tx/',
+      59144: 'https://lineascan.build/tx/',
+      60808: 'https://explorer.gobob.xyz/tx/',
+      80094: 'https://beratrail.io/tx/',
+      81457: 'https://blastscan.io/tx/',
+      534352: 'https://scrollscan.com/tx/',
+      7777777: 'https://explorer.zora.energy/tx/',
+      // Testnets
       11155111: 'https://sepolia.etherscan.io/tx/',
       84532: 'https://sepolia.basescan.org/tx/',
       11155420: 'https://sepolia-optimism.etherscan.io/tx/',
@@ -231,77 +432,19 @@ export function SweepButton({
       97: 'https://testnet.bscscan.com/tx/',
     };
 
-    return (explorers[selectedChain] || '#') + hash;
+    return (explorers[targetChain] || '#') + hash;
   };
 
-  const isButtonDisabled = disabled ||
-    status === 'signing' ||
-    status === 'submitting' ||
-    status === 'processing';
-
-  const getButtonContent = () => {
-    switch (status) {
-      case 'idle':
-        return (
-          <>
-            <Sparkles className="w-5 h-5" />
-            Sweep to Zero
-            <ArrowRight className="w-5 h-5" />
-          </>
-        );
-      case 'signing':
-        return (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Sign in wallet (2 signatures)
-          </>
-        );
-      case 'submitting':
-        return (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Submitting...
-          </>
-        );
-      case 'processing':
-        return (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Sweeping...
-          </>
-        );
-      case 'success':
-        return (
-          <>
-            <Check className="w-5 h-5" />
-            Sweep Complete!
-          </>
-        );
-      case 'error':
-        return (
-          <>
-            <X className="w-5 h-5" />
-            Failed
-          </>
-        );
-    }
-  };
+  // Button is only shown in idle state now
 
   const getButtonClass = () => {
     const base = 'w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-3';
 
-    if (isButtonDisabled && status === 'idle') {
+    if (disabled) {
       return `${base} bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed`;
     }
 
-    switch (status) {
-      case 'success':
-        return `${base} bg-success text-white`;
-      case 'error':
-        return `${base} bg-error text-white hover:bg-error/90`;
-      default:
-        return `${base} bg-gradient-brand text-white hover:shadow-glow hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none`;
-    }
+    return `${base} bg-gradient-brand text-white hover:shadow-glow hover:scale-[1.02] active:scale-[0.98]`;
   };
 
   return (
@@ -347,19 +490,42 @@ export function SweepButton({
         </motion.div>
       )}
 
-      {/* Main button */}
-      <motion.button
-        onClick={status === 'error' ? reset : handleSweep}
-        disabled={isButtonDisabled}
-        className={getButtonClass()}
-        whileTap={!isButtonDisabled ? { scale: 0.98 } : undefined}
-      >
-        {getButtonContent()}
-      </motion.button>
+      {/* Main button - only show in idle state */}
+      {status === 'idle' && (
+        <motion.button
+          onClick={handleSweep}
+          disabled={disabled}
+          className={getButtonClass()}
+          whileTap={!disabled ? { scale: 0.98 } : undefined}
+        >
+          <Sparkles className="w-5 h-5" />
+          Sweep
+          <ArrowRight className="w-5 h-5" />
+        </motion.button>
+      )}
+
+      {/* Signing/Submitting status */}
+      <AnimatePresence>
+        {(status === 'signing' || status === 'submitting') && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="card-elevated p-5"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <Loader2 className="w-5 h-5 animate-spin text-brand-violet" />
+              <span className="font-medium">
+                {status === 'signing' ? 'Sign in wallet (2 signatures)' : 'Submitting...'}
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Status modal */}
       <AnimatePresence>
-        {(status === 'processing' || status === 'success') && chainInfo && (
+        {(status === 'processing' || status === 'bridging' || status === 'success') && chainInfo && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -367,30 +533,24 @@ export function SweepButton({
             className="card-elevated p-5"
           >
             <h4 className="font-semibold mb-4">
-              {status === 'processing' ? 'Sweeping in progress...' : 'Sweep Complete!'}
+              {status === 'processing' ? 'Sweeping in progress...' :
+               status === 'bridging' ? 'Bridging to destination...' :
+               'Sweep Complete!'}
             </h4>
 
-            {/* Chain progress */}
+            {/* Source chain progress */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${chainInfo.color}20` }}
-                >
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: chainInfo.color }}
-                  />
-                </div>
+                <ChainIcon chainId={selectedChain!} size={32} />
                 <span className="font-medium">{chainInfo.name}</span>
               </div>
               <span className="flex items-center gap-2">
-                {status === 'success' ? (
+                {(status === 'success' || status === 'bridging') && txHash ? (
                   <>
                     <div className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
                       <Check className="w-4 h-4 text-success" />
                     </div>
-                    <span className="text-sm text-success font-medium">Complete</span>
+                    <span className="text-sm text-success font-medium">Confirmed</span>
                   </>
                 ) : (
                   <>
@@ -401,19 +561,106 @@ export function SweepButton({
               </span>
             </div>
 
-            {txHash && (
+            {/* Destination chain progress (for cross-chain sweeps) */}
+            {destinationChainId && chainMeta[destinationChainId] && (
+              <>
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center gap-3">
+                    <ChainIcon chainId={destinationChainId} size={32} />
+                    <span className="font-medium">{chainMeta[destinationChainId].name}</span>
+                  </div>
+                  <span className="flex items-center gap-2">
+                    {status === 'success' && destinationTxHash ? (
+                      <>
+                        <div className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-success" />
+                        </div>
+                        <span className="text-sm text-success font-medium">Complete</span>
+                      </>
+                    ) : status === 'bridging' ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin text-brand-violet" />
+                        <span className="text-sm text-brand-violet font-medium">Bridging</span>
+                      </>
+                    ) : null}
+                  </span>
+                </div>
+
+                {/* Cross-chain: show destination info when complete or bridging */}
+                {(status === 'success' || status === 'bridging') && (
+                  <div className="mt-3 pl-11 space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Recipient</span>
+                      <span className="font-mono">{truncateAddress(destinationAddress)}</span>
+                    </div>
+                    {userReceived ? (
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Received</span>
+                        <span className="font-medium text-success">
+                          {formatReceived(userReceived, destinationChainId)}
+                        </span>
+                      </div>
+                    ) : quote?.estimatedReceive && (
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Est. Receive</span>
+                        <span className="font-medium">
+                          ~{formatReceived(quote.estimatedReceive, destinationChainId)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Same-chain: show destination info */}
+            {!isCrossChain && status === 'success' && (
               <div className="mt-4 pt-4 border-t border-light-border dark:border-dark-border">
-                <a
-                  href={getExplorerUrl(txHash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-ghost text-sm text-brand-violet w-full justify-center"
-                >
-                  View on Explorer
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Recipient</span>
+                    <span className="font-mono">{truncateAddress(destinationAddress)}</span>
+                  </div>
+                  {userReceived && selectedChain && (
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Received</span>
+                      <span className="font-medium text-success">
+                        {formatReceived(userReceived, selectedChain)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
+
+            {/* Transaction links */}
+            {(txHash || destinationTxHash) && (
+              <div className="mt-4 pt-4 border-t border-light-border dark:border-dark-border space-y-2">
+                {txHash && (
+                  <a
+                    href={getExplorerUrl(txHash)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost text-sm text-brand-violet w-full justify-center"
+                  >
+                    {isCrossChain ? 'View Source TX' : 'View Transaction'}
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+                {destinationTxHash && (
+                  <a
+                    href={getExplorerUrl(destinationTxHash, destinationChainId)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost text-sm text-brand-violet w-full justify-center"
+                  >
+                    View Destination TX
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+            )}
+
           </motion.div>
         )}
       </AnimatePresence>
