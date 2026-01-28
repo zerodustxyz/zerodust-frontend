@@ -13,6 +13,7 @@ export type FeeWarningType = 'none' | 'amount_too_low' | 'high_fee';
 
 interface FeeBreakdownProps {
   selectedChain: number;
+  destinationChain?: number | null;
   balance: bigint;
   destinationAddress: string;
   onQuoteChange?: (quote: QuoteV3Response | null) => void;
@@ -27,12 +28,15 @@ const MAX_SERVICE_FEE_USD = 0.50; // $0.50
 
 export function FeeBreakdown({
   selectedChain,
+  destinationChain,
   balance,
   destinationAddress,
   onQuoteChange,
   onWarningChange,
   isPreview = false
 }: FeeBreakdownProps) {
+  // Use destination chain if provided, otherwise same-chain sweep
+  const toChainId = destinationChain ?? selectedChain;
   const { address, isConnected } = useAccount();
   const [quote, setQuote] = useState<QuoteV3Response | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,10 +44,13 @@ export function FeeBreakdown({
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [tokenPrice, setTokenPrice] = useState<number>(0);
+  const [destTokenPrice, setDestTokenPrice] = useState<number>(0);
   const [priceLoading, setPriceLoading] = useState(false);
 
-  const chainInfo = chainMeta[selectedChain] || { name: 'Unknown', color: '#888', symbol: 'ETH' };
-  const tokenSymbol = chainInfo.symbol;
+  const sourceChainInfo = chainMeta[selectedChain] || { name: 'Unknown', color: '#888', symbol: 'ETH' };
+  const destChainInfo = chainMeta[toChainId] || { name: 'Unknown', color: '#888', symbol: 'ETH' };
+  const sourceTokenSymbol = sourceChainInfo.symbol;
+  const destTokenSymbol = destChainInfo.symbol;
 
   // Calculate service fee with USD caps
   const calculateServiceFee = (amountWei: bigint, tokenPriceUsd: number): bigint => {
@@ -76,31 +83,54 @@ export function FeeBreakdown({
     return parseEther(serviceFeeEth.toFixed(18));
   };
 
-  // Fetch token price for USD calculations (based on chain's native token)
+  // Fetch token prices for USD calculations
+  // Source token price for fee calculations, destination token price for receive calculations
   useEffect(() => {
-    const fetchPrice = async () => {
-      if (!tokenSymbol) return;
+    const fetchPrices = async () => {
+      if (!sourceTokenSymbol) return;
 
       setPriceLoading(true);
       try {
-        const priceData = await priceService.getPrice(tokenSymbol);
-        const price = priceData.priceUsd;
-        // Validate price before setting
-        if (typeof price === 'number' && !isNaN(price) && price > 0) {
-          setTokenPrice(price);
+        // Fetch source token price (for fees)
+        const sourcePriceData = await priceService.getPrice(sourceTokenSymbol);
+        const sourcePrice = sourcePriceData.priceUsd;
+        if (typeof sourcePrice === 'number' && !isNaN(sourcePrice) && sourcePrice > 0) {
+          setTokenPrice(sourcePrice);
         } else {
-          console.warn(`Invalid ${tokenSymbol} price received:`, price);
+          console.warn(`Invalid ${sourceTokenSymbol} price received:`, sourcePrice);
           setTokenPrice(0);
         }
+
+        // Fetch destination token price (for receive USD calculation)
+        // Only fetch if different from source token
+        if (destTokenSymbol && destTokenSymbol !== sourceTokenSymbol) {
+          try {
+            const destPriceData = await priceService.getPrice(destTokenSymbol);
+            const destPrice = destPriceData.priceUsd;
+            if (typeof destPrice === 'number' && !isNaN(destPrice) && destPrice > 0) {
+              setDestTokenPrice(destPrice);
+            } else {
+              console.warn(`Invalid ${destTokenSymbol} price received:`, destPrice);
+              setDestTokenPrice(0);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch ${destTokenSymbol} price:`, err);
+            setDestTokenPrice(0);
+          }
+        } else {
+          // Same token for source and destination, use source price
+          setDestTokenPrice(sourcePrice);
+        }
       } catch (err) {
-        console.error(`Failed to fetch ${tokenSymbol} price:`, err);
+        console.error(`Failed to fetch ${sourceTokenSymbol} price:`, err);
         setTokenPrice(0);
+        setDestTokenPrice(0);
       } finally {
         setPriceLoading(false);
       }
     };
-    fetchPrice();
-  }, [tokenSymbol]);
+    fetchPrices();
+  }, [sourceTokenSymbol, destTokenSymbol]);
 
   // Fetch quote from backend
   useEffect(() => {
@@ -120,7 +150,7 @@ export function FeeBreakdown({
       try {
         const quoteResponse = await api.getQuote({
           fromChainId: selectedChain,
-          toChainId: selectedChain,
+          toChainId: toChainId,
           userAddress: userAddr,
           destination: destinationAddress,
         });
@@ -145,7 +175,7 @@ export function FeeBreakdown({
     };
 
     fetchQuote();
-  }, [selectedChain, address, destinationAddress, isConnected]);
+  }, [selectedChain, toChainId, address, destinationAddress, isConnected]);
 
   // Countdown timer
   useEffect(() => {
@@ -176,8 +206,8 @@ export function FeeBreakdown({
     const overheadGas = BigInt(quote.fees.overheadGasUnits);
     const protocolGas = BigInt(quote.fees.protocolFeeGasUnits);
     const gasPrice = BigInt(quote.fees.reimbGasPriceCapWei);
-    const extraFee = BigInt(quote.fees.extraFeeWei);
-    const networkFee = (overheadGas + protocolGas) * gasPrice + extraFee;
+    const extraFeeWei = BigInt(quote.fees.extraFeeWei); // This is the service fee
+    const networkFee = (overheadGas + protocolGas) * gasPrice; // Gas only, no service fee
 
     const inPreviewMode = !isConnected;
 
@@ -233,12 +263,15 @@ export function FeeBreakdown({
     return null;
   }
 
-  // Extract network fee from quote (gas-related costs)
+  // Extract fees from quote
   const overheadGas = BigInt(quote.fees.overheadGasUnits);
   const protocolGas = BigInt(quote.fees.protocolFeeGasUnits);
   const gasPrice = BigInt(quote.fees.reimbGasPriceCapWei);
-  const extraFee = BigInt(quote.fees.extraFeeWei);
-  const networkFee = (overheadGas + protocolGas) * gasPrice + extraFee;
+  const extraFeeWei = BigInt(quote.fees.extraFeeWei); // This IS the service fee
+  // Network fee is gas-only (overhead + protocol gas costs) - unbuffered for preview mode
+  const unbufferedNetworkFee = (overheadGas + protocolGas) * gasPrice;
+  // Service fee from backend is extraFeeWei
+  const backendServiceFee = extraFeeWei;
 
   // Determine if we're in preview mode (not connected)
   const inPreviewMode = !isConnected;
@@ -248,18 +281,23 @@ export function FeeBreakdown({
   let serviceFee: bigint;
   let totalFee: bigint;
   let estimatedReceive: bigint;
+  let networkFee: bigint;
 
   if (inPreviewMode) {
     // Preview mode: use user's entered balance + calculated fees
     displayBalance = balance;
     serviceFee = calculateServiceFee(balance, tokenPrice);
+    networkFee = unbufferedNetworkFee;
     totalFee = serviceFee + networkFee;
     estimatedReceive = balance > totalFee ? balance - totalFee : 0n;
   } else {
     // Connected mode: use actual quote data
     displayBalance = BigInt(quote.userBalance);
     totalFee = BigInt(quote.fees.maxTotalFeeWei);
-    serviceFee = totalFee - networkFee; // Approximate
+    serviceFee = backendServiceFee; // Use the actual service fee from backend (extraFeeWei)
+    // Calculate network fee as (totalFee - serviceFee) so breakdown adds up correctly
+    // This includes the gas buffer that's built into maxTotalFeeWei
+    networkFee = totalFee - serviceFee;
     estimatedReceive = BigInt(quote.estimatedReceive);
   }
 
@@ -274,6 +312,14 @@ export function FeeBreakdown({
     ? (Number(totalFee) / Number(displayBalance) * 100).toFixed(2)
     : '0';
 
+  // Calculate individual fee percentages for display
+  const serviceFeePercentage = displayBalance > 0n && !feesExceedAmount
+    ? (Number(serviceFee) / Number(displayBalance) * 100).toFixed(2)
+    : '0';
+  const networkFeePercentage = displayBalance > 0n && !feesExceedAmount
+    ? (Number(networkFee) / Number(displayBalance) * 100).toFixed(2)
+    : '0';
+
   // Helper to format USD safely
   const formatUsd = (value: number): string => {
     if (isNaN(value) || !isFinite(value)) return '-';
@@ -282,11 +328,13 @@ export function FeeBreakdown({
 
   // Calculate USD values (only if tokenPrice is valid)
   const validPrice = tokenPrice > 0 && !isNaN(tokenPrice);
+  const validDestPrice = destTokenPrice > 0 && !isNaN(destTokenPrice);
   const balanceUsd = validPrice ? Number(formatEther(displayBalance)) * tokenPrice : NaN;
   const serviceFeeUsd = validPrice ? Number(formatEther(serviceFee)) * tokenPrice : NaN;
   const networkFeeUsd = validPrice ? Number(formatEther(networkFee)) * tokenPrice : NaN;
   const totalFeeUsd = validPrice ? Number(formatEther(totalFee)) * tokenPrice : NaN;
-  const receiveUsd = validPrice ? Number(formatEther(estimatedReceive)) * tokenPrice : NaN;
+  // Use destination token price for receive USD (estimatedReceive is in destination token)
+  const receiveUsd = validDestPrice ? Number(formatEther(estimatedReceive)) * destTokenPrice : NaN;
 
   return (
     <motion.div
@@ -309,7 +357,7 @@ export function FeeBreakdown({
           <div>
             <p className="text-sm font-medium text-red-500">Amount too low</p>
             <p className="text-xs text-red-500/80">
-              Minimum amount needed: ~{Number(formatEther(totalFee)).toFixed(6)} {chainInfo.symbol} ({formatUsd(totalFeeUsd)})
+              Minimum amount needed: ~{Number(formatEther(totalFee)).toFixed(6)} {sourceChainInfo.symbol} ({formatUsd(totalFeeUsd)})
             </p>
           </div>
         </div>
@@ -322,7 +370,7 @@ export function FeeBreakdown({
           <div>
             <p className="text-sm font-medium text-red-500">High fee ratio</p>
             <p className="text-xs text-red-500/80">
-              Fees will consume {feePercentage}% of your amount. You&apos;ll only receive ~{Number(formatEther(estimatedReceive)).toFixed(6)} {chainInfo.symbol} ({formatUsd(receiveUsd)}).
+              Fees will consume {feePercentage}% of your amount. You&apos;ll only receive ~{Number(formatEther(estimatedReceive)).toFixed(6)} {destChainInfo.symbol} ({formatUsd(receiveUsd)}).
             </p>
           </div>
         </div>
@@ -335,7 +383,7 @@ export function FeeBreakdown({
           <div className="flex items-center gap-2">
             <div className="text-right">
               <span className="font-mono font-semibold text-green-500">
-                {inPreviewMode ? '~' : ''}{Number(formatEther(estimatedReceive)).toFixed(6)} {chainInfo.symbol}
+                {inPreviewMode ? '~' : ''}{Number(formatEther(estimatedReceive)).toFixed(6)} {destChainInfo.symbol}
               </span>
               <span className="block text-xs text-zinc-400">
                 {inPreviewMode ? '~' : ''}{formatUsd(receiveUsd)}
@@ -361,7 +409,9 @@ export function FeeBreakdown({
           {feesExceedAmount ? (
             <span className="text-xs text-red-500">Insufficient</span>
           ) : (
-            <span className="text-xs">{inPreviewMode ? '~' : ''}{feePercentage}% fee</span>
+            <span className="text-xs">
+              {inPreviewMode ? '~' : ''}{serviceFeePercentage}% service + {inPreviewMode ? '~' : ''}{networkFeePercentage}% network
+            </span>
           )}
           {isExpanded ? (
             <ChevronUp className="w-4 h-4" />
@@ -382,7 +432,7 @@ export function FeeBreakdown({
             <span className="text-zinc-500">Amount</span>
             <div className="text-right">
               <span className="font-mono">
-                {Number(formatEther(displayBalance)).toFixed(6)} {chainInfo.symbol}
+                {Number(formatEther(displayBalance)).toFixed(6)} {sourceChainInfo.symbol}
               </span>
               <span className="block text-xs text-zinc-400">{formatUsd(balanceUsd)}</span>
             </div>
@@ -390,12 +440,12 @@ export function FeeBreakdown({
 
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-zinc-500">Service fee</span>
-              <span className="block text-xs text-zinc-400">5% (min $0.05, max $0.50)</span>
+              <span className="text-zinc-500">Service fee ({serviceFeePercentage}%)</span>
+              <span className="block text-xs text-zinc-400">5% of amount (min $0.05, max $0.50)</span>
             </div>
             <div className="text-right">
               <span className="font-mono text-zinc-400">
-                {Number(formatEther(serviceFee)).toFixed(6)} {chainInfo.symbol}
+                {Number(formatEther(serviceFee)).toFixed(6)} {sourceChainInfo.symbol}
               </span>
               <span className="block text-xs text-zinc-500">
                 {formatUsd(serviceFeeUsd)}
@@ -405,12 +455,12 @@ export function FeeBreakdown({
 
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-zinc-500">Network fee</span>
-              <span className="block text-xs text-zinc-400">Gas cost</span>
+              <span className="text-zinc-500">Network fee ({networkFeePercentage}%)</span>
+              <span className="block text-xs text-zinc-400">Gas cost + buffer</span>
             </div>
             <div className="text-right">
               <span className="font-mono text-zinc-400">
-                {Number(formatEther(networkFee)).toFixed(6)} {chainInfo.symbol}
+                {Number(formatEther(networkFee)).toFixed(6)} {sourceChainInfo.symbol}
               </span>
               <span className="block text-xs text-zinc-500">
                 {formatUsd(networkFeeUsd)}
@@ -422,7 +472,7 @@ export function FeeBreakdown({
             <span className="text-zinc-500 font-medium">You receive</span>
             <div className="text-right">
               <span className="font-mono font-semibold text-green-500">
-                {inPreviewMode ? '~' : ''}{Number(formatEther(estimatedReceive)).toFixed(6)} {chainInfo.symbol}
+                {inPreviewMode ? '~' : ''}{Number(formatEther(estimatedReceive)).toFixed(6)} {destChainInfo.symbol}
               </span>
               <span className="block text-xs text-zinc-400">
                 {inPreviewMode ? '~' : ''}{formatUsd(receiveUsd)}
@@ -431,7 +481,7 @@ export function FeeBreakdown({
           </div>
 
           <p className="text-xs text-zinc-400 pt-2">
-            Final balance: <span className="font-mono font-semibold">0 {chainInfo.symbol}</span>
+            Final balance: <span className="font-mono font-semibold">0 {sourceChainInfo.symbol}</span>
           </p>
         </motion.div>
       )}

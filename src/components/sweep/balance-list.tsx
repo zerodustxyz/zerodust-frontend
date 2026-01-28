@@ -16,6 +16,7 @@ interface BalanceListProps {
   onSelectionChange: (chain: number | null, balance?: bigint) => void;
   onBalanceChange?: (balance: bigint) => void;
   networkMode?: NetworkMode;
+  refreshKey?: number;
 }
 
 interface ChainBalance {
@@ -25,7 +26,7 @@ interface ChainBalance {
   error: string | null;
 }
 
-export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange, networkMode = 'testnet' }: BalanceListProps) {
+export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange, networkMode = 'testnet', refreshKey }: BalanceListProps) {
   const { address, isConnected } = useAccount();
   const [balances, setBalances] = useState<ChainBalance[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -63,7 +64,7 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange,
 
     try {
       // Fetch balances from backend API
-      const response = await api.getBalances(address, true);
+      const response = await api.getBalances(address, networkMode === 'testnet');
 
       // Map backend response to our ChainBalance format
       const results = chainsToShow.map(chainId => {
@@ -95,7 +96,7 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange,
     if (address) {
       fetchBalances();
     }
-  }, [address, networkMode]);
+  }, [address, networkMode, refreshKey]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -181,7 +182,11 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange,
           >
             {/* Header with refresh */}
             <div className="flex items-center justify-between p-3 border-b border-light-border dark:border-dark-border">
-              <span className="text-sm font-medium text-zinc-500">Select source chain</span>
+              <span className="text-sm font-medium text-zinc-500">
+                {isConnected && !isLoading
+                  ? `${chainsWithBalance.length} chain${chainsWithBalance.length !== 1 ? 's' : ''} with balance`
+                  : 'Select source chain'}
+              </span>
               {isConnected && (
                 <button
                   onClick={(e) => {
@@ -196,9 +201,11 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange,
               )}
             </div>
 
-            {/* Chain list */}
+            {/* Chain list - show only chains with balance when connected */}
             <div className="max-h-80 overflow-y-auto">
-              {chainsToShow.map((chainId) => {
+              {(isConnected && !isLoading ? chainsWithBalance : balances).map((item) => {
+                // Handle both ChainBalance objects and chainId numbers
+                const chainId = typeof item === 'number' ? item : item.chainId;
                 const chainData = balances.find(b => b.chainId === chainId);
                 const balance = chainData?.balance || 0n;
                 const chainLoading = chainData?.isLoading || false;
@@ -206,22 +213,16 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange,
 
                 const meta = chainMeta[chainId] || { name: `Chain ${chainId}`, color: '#888', symbol: 'ETH' };
                 const isSelected = selectedChain === chainId;
-                const hasBalance = balance > 0n;
-
-                // Allow selection when not connected OR when connected and has balance
-                const canSelect = !isConnected || hasBalance;
 
                 return (
                   <button
                     key={chainId}
-                    onClick={() => canSelect && !chainLoading && selectChain(chainId)}
-                    disabled={isConnected && (!hasBalance || chainLoading)}
+                    onClick={() => !chainLoading && selectChain(chainId)}
+                    disabled={chainLoading}
                     className={`w-full flex items-center justify-between p-3 transition-colors ${
                       isSelected
                         ? 'bg-brand-violet/10'
-                        : canSelect
-                        ? 'hover:bg-light-elevated dark:hover:bg-dark-elevated'
-                        : 'opacity-50 cursor-not-allowed'
+                        : 'hover:bg-light-elevated dark:hover:bg-dark-elevated'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -239,7 +240,7 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange,
                         ) : error ? (
                           <span className="text-xs text-red-500">{error}</span>
                         ) : (
-                          <span className={`font-mono text-sm ${hasBalance ? '' : 'text-zinc-400'}`}>
+                          <span className="font-mono text-sm">
                             {Number(formatEther(balance)).toFixed(4)} {meta.symbol}
                           </span>
                         )
@@ -267,7 +268,7 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange,
               <div className="p-6 text-center">
                 <p className="text-sm text-zinc-500">No balances found</p>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Fund a testnet wallet to start sweeping
+                  No dust to sweep on supported chains
                 </p>
               </div>
             )}
