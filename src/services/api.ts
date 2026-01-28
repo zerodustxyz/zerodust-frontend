@@ -47,6 +47,7 @@ export interface QuoteV3Response {
   };
   deadline: number;
   nonce: number;
+  authNonce: number;  // Transaction count for EIP-7702 authorization
   validForSeconds: number;
 }
 
@@ -70,17 +71,20 @@ export const SWEEP_INTENT_TYPES = {
   ],
 } as const;
 
+export interface EIP7702Authorization {
+  chainId: number;
+  contractAddress: string;
+  nonce: number;
+  yParity: number;
+  r: string;
+  s: string;
+}
+
 export interface SweepRequest {
   quoteId: string;
   signature: string;
-  eip7702Authorization: {
-    chainId: number;
-    contractAddress: string;
-    nonce: number;
-    yParity: number;
-    r: string;
-    s: string;
-  };
+  eip7702Authorization: EIP7702Authorization;
+  revokeAuthorization?: EIP7702Authorization;
 }
 
 // Two-step sweep request (no EIP-7702 auth needed - user is already registered)
@@ -99,11 +103,14 @@ export interface SweepResponse {
 
 export interface SweepStatusResponse {
   sweepId: string;
-  status: 'pending' | 'queued' | 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'queued' | 'processing' | 'bridging' | 'completed' | 'failed';
   txHash?: string;
+  destinationTxHash?: string;
   error?: string;
   completedAt?: string;
   userReceived?: string;
+  fromChainId?: number;
+  toChainId?: number;
 }
 
 class ApiError extends Error {
@@ -181,6 +188,8 @@ export const api = {
 
   /**
    * Poll for sweep completion
+   * For cross-chain sweeps, returns when status is 'bridging' (source tx confirmed)
+   * or 'completed'/'failed' (final states)
    */
   async pollSweepStatus(
     sweepId: string,
@@ -188,21 +197,54 @@ export const api = {
     maxAttempts = 60,
     intervalMs = 2000
   ): Promise<SweepStatusResponse> {
+    let lastStatus: SweepStatusResponse | null = null;
+    let networkErrors = 0;
+    const maxNetworkErrors = 3;
+
     for (let i = 0; i < maxAttempts; i++) {
-      const status = await this.getSweepStatus(sweepId);
+      try {
+        const status = await this.getSweepStatus(sweepId);
+        lastStatus = status;
+        networkErrors = 0; // Reset on success
 
-      if (onUpdate) {
-        onUpdate(status);
+        if (onUpdate) {
+          onUpdate(status);
+        }
+
+        // Terminal states - stop polling
+        if (status.status === 'completed' || status.status === 'failed') {
+          return status;
+        }
+
+        // For cross-chain 'bridging': keep polling but use longer interval
+        // The bridge monitor checks Gas.zip every 10s, so we poll every 5s for updates
+        const pollInterval = status.status === 'bridging' ? 5000 : intervalMs;
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      } catch (err) {
+        networkErrors++;
+        console.warn(`Poll attempt ${i + 1} failed:`, err);
+
+        // If we have a last known status with txHash, return it instead of failing
+        if (lastStatus?.txHash && networkErrors >= maxNetworkErrors) {
+          console.warn('Max network errors reached, returning last known status');
+          return lastStatus;
+        }
+
+        // Allow a few retries for transient network issues
+        if (networkErrors >= maxNetworkErrors) {
+          throw new Error('Unable to check sweep status. Please check the transaction on the block explorer.');
+        }
+
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
       }
-
-      if (status.status === 'completed' || status.status === 'failed') {
-        return status;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, intervalMs));
     }
 
-    throw new Error('Sweep timed out');
+    // If we have a status with txHash but timed out, return it
+    if (lastStatus?.txHash) {
+      return lastStatus;
+    }
+
+    throw new Error('Sweep status check timed out');
   },
 
   /**
