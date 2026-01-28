@@ -65,7 +65,7 @@ const plasma = defineChain({
   name: 'Plasma',
   nativeCurrency: { name: 'Plasma', symbol: 'XPL', decimals: 18 },
   rpcUrls: { default: { http: ['https://rpc.plasma.to'] } },
-  blockExplorers: { default: { name: 'Plasma Explorer', url: 'https://explorer.plasma.to' } },
+  blockExplorers: { default: { name: 'Plasmascan', url: 'https://plasmascan.to' } },
 });
 
 const story = defineChain({
@@ -73,7 +73,7 @@ const story = defineChain({
   name: 'Story',
   nativeCurrency: { name: 'IP Token', symbol: 'IP', decimals: 18 },
   rpcUrls: { default: { http: ['https://mainnet.storyrpc.io'] } },
-  blockExplorers: { default: { name: 'Story Explorer', url: 'https://storyscan.xyz' } },
+  blockExplorers: { default: { name: 'Storyscan', url: 'https://www.storyscan.io' } },
 });
 
 const superseed = defineChain({
@@ -272,7 +272,7 @@ export const chainMeta: Record<number, { name: string; icon: string; color: stri
   5000: { name: 'Mantle', icon: '/chains/mantle.svg', color: '#000000', symbol: 'MNT' },
   42220: { name: 'Celo', icon: '/chains/celo.svg', color: '#FCFF52', symbol: 'CELO' },
   81457: { name: 'Blast', icon: '/chains/blast.svg', color: '#FCFC03', symbol: 'ETH' },
-  252: { name: 'Fraxtal', icon: '/chains/fraxtal.svg', color: '#000000', symbol: 'frxETH' },
+  252: { name: 'Fraxtal', icon: '/chains/fraxtal.svg', color: '#000000', symbol: 'FRAX' },
   1329: { name: 'Sei', icon: '/chains/sei.svg', color: '#9B1B30', symbol: 'SEI' },
   60808: { name: 'BOB', icon: '/chains/bob.svg', color: '#F25D23', symbol: 'ETH' },
   130: { name: 'Unichain', icon: '/chains/unichain.svg', color: '#FF007A', symbol: 'ETH' },

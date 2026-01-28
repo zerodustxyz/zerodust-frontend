@@ -17,12 +17,25 @@ export default function AppPage() {
   const [selectedBalance, setSelectedBalance] = useState<bigint>(0n);
   const [destinationAddress, setDestinationAddress] = useState<string>('');
   const [quote, setQuote] = useState<QuoteV3Response | null>(null);
+  const [balanceRefreshKey, setBalanceRefreshKey] = useState(0);
 
   const effectiveDestination = destinationAddress || address || '';
 
   const handleChainSelect = useCallback((chainId: number | null) => {
     setSelectedChain(chainId);
     setQuote(null);
+  }, []);
+
+  const handleSweepComplete = useCallback(() => {
+    // Reset all state to allow a fresh sweep
+    setSelectedChain(null);
+    setSelectedBalance(0n);
+    setQuote(null);
+  }, []);
+
+  const handleSweepSuccess = useCallback(() => {
+    // Trigger balance list refresh to show updated (zero) balance
+    setBalanceRefreshKey(prev => prev + 1);
   }, []);
 
   if (!isConnected) {
@@ -97,6 +110,7 @@ export default function AppPage() {
                 selectedChain={selectedChain}
                 onSelectionChange={handleChainSelect}
                 onBalanceChange={setSelectedBalance}
+                refreshKey={balanceRefreshKey}
               />
             </div>
 
@@ -144,6 +158,8 @@ export default function AppPage() {
                 destinationAddress={effectiveDestination}
                 quote={quote}
                 disabled={selectedChain === null || !effectiveDestination || !quote}
+                onSweepComplete={handleSweepComplete}
+                onSweepSuccess={handleSweepSuccess}
               />
             </div>
           </div>

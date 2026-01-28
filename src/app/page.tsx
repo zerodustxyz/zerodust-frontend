@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { BalanceList, NetworkMode } from '@/components/sweep/balance-list';
 import { DestinationForm } from '@/components/sweep/destination-form';
+import { DestinationChainSelector } from '@/components/sweep/destination-chain-selector';
 import { SweepButton } from '@/components/sweep/sweep-button';
 import { FeeBreakdown, FeeWarningType } from '@/components/sweep/fee-breakdown';
 import { QuoteV3Response } from '@/services/api';
@@ -95,6 +96,7 @@ export default function Home() {
   const { isConnected, address } = useAccount();
   const [networkMode, setNetworkMode] = useState<NetworkMode>('testnet');
   const [selectedChain, setSelectedChain] = useState<number | null>(null);
+  const [destinationChain, setDestinationChain] = useState<number | null>(null);
   const [selectedBalance, setSelectedBalance] = useState<bigint>(0n);
   const [manualAmount, setManualAmount] = useState<string>('');
   const [destinationAddress, setDestinationAddress] = useState<string>('');
@@ -139,6 +141,7 @@ export default function Home() {
 
   const handleChainSelect = useCallback((chainId: number | null, balance?: bigint) => {
     setSelectedChain(chainId);
+    setDestinationChain(null); // Reset destination chain when source changes
     setSelectedBalance(balance || 0n);
     // When connected and chain selected, auto-fill with balance
     if (balance && balance > 0n) {
@@ -414,8 +417,24 @@ export default function Home() {
               {/* To section - Always interactive */}
               <div className="p-5 pt-3 bg-zinc-50/50 dark:bg-zinc-800/20 rounded-b-3xl">
                 <div className="text-xs text-zinc-500 mb-3 uppercase tracking-wider font-semibold">To</div>
+
+                {/* Destination chain selector */}
+                {selectedChain && (
+                  <div className="mb-4">
+                    <DestinationChainSelector
+                      sourceChain={selectedChain}
+                      selectedChain={destinationChain}
+                      onChainSelect={(chainId) => {
+                        setDestinationChain(chainId);
+                        setQuote(null);
+                      }}
+                      availableChains={displayChains.map(c => c.chainId)}
+                    />
+                  </div>
+                )}
+
                 <DestinationForm
-                  chainId={selectedChain}
+                  chainId={destinationChain ?? selectedChain}
                   address={effectiveDestination}
                   onAddressChange={setDestinationAddress}
                 />
@@ -431,6 +450,7 @@ export default function Home() {
                 >
                   <FeeBreakdown
                     selectedChain={selectedChain}
+                    destinationChain={destinationChain}
                     balance={effectiveBalance}
                     destinationAddress={effectiveDestination || '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'}
                     onQuoteChange={setQuote}
