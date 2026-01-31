@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Check, ExternalLink, AlertTriangle, Info, Sparkles, ArrowRight } from 'lucide-react';
 import { useWalletClient, useAccount, useSwitchChain, usePublicClient } from 'wagmi';
 import { chainMeta } from '@/config/wagmi';
-import { api, QuoteV3Response, ApiError, SWEEP_INTENT_TYPES } from '@/services/api';
+import { api, QuoteResponse, ApiError, SWEEP_INTENT_TYPES } from '@/services/api';
 import { ChainIcon } from '@/components/ui/chain-icon';
 
 // EIP-7702 wallet compatibility status
@@ -60,41 +60,41 @@ function detectWallet(): WalletInfo {
   return { name: 'Unknown Wallet', compatibility: 'unknown' };
 }
 
-// V3 contract addresses per chain
+// Contract addresses per chain
 // Mainnet: 0x3732398281d0606aCB7EC1D490dFB0591BE4c4f2 (CREATE2 deterministic, 26 chains)
 // Testnet: Various addresses per chain
-const V3_MAINNET_ADDRESS: `0x${string}` = '0x3732398281d0606aCB7EC1D490dFB0591BE4c4f2';
+const MAINNET_ADDRESS: `0x${string}` = '0x3732398281d0606aCB7EC1D490dFB0591BE4c4f2';
 
-const V3_CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
+const CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
   // Mainnets (26 chains) - all use the same CREATE2 address
-  1: V3_MAINNET_ADDRESS,        // Ethereum
-  10: V3_MAINNET_ADDRESS,       // Optimism
-  56: V3_MAINNET_ADDRESS,       // BSC
-  100: V3_MAINNET_ADDRESS,      // Gnosis
-  130: V3_MAINNET_ADDRESS,      // Unichain
-  137: V3_MAINNET_ADDRESS,      // Polygon
-  146: V3_MAINNET_ADDRESS,      // Sonic
-  196: V3_MAINNET_ADDRESS,      // X Layer
-  252: V3_MAINNET_ADDRESS,      // Fraxtal
-  480: V3_MAINNET_ADDRESS,      // World Chain
-  1329: V3_MAINNET_ADDRESS,     // Sei
-  1514: V3_MAINNET_ADDRESS,     // Story
-  1868: V3_MAINNET_ADDRESS,     // Soneium
-  5000: V3_MAINNET_ADDRESS,     // Mantle
-  5330: V3_MAINNET_ADDRESS,     // Superseed
-  8453: V3_MAINNET_ADDRESS,     // Base
-  9745: V3_MAINNET_ADDRESS,     // Plasma
-  33139: V3_MAINNET_ADDRESS,    // ApeChain
-  34443: V3_MAINNET_ADDRESS,    // Mode
-  42161: V3_MAINNET_ADDRESS,    // Arbitrum
-  42220: V3_MAINNET_ADDRESS,    // Celo
-  57073: V3_MAINNET_ADDRESS,    // Ink
-  59144: V3_MAINNET_ADDRESS,    // Linea
-  60808: V3_MAINNET_ADDRESS,    // BOB
-  80094: V3_MAINNET_ADDRESS,    // Berachain
-  81457: V3_MAINNET_ADDRESS,    // Blast
-  534352: V3_MAINNET_ADDRESS,   // Scroll
-  7777777: V3_MAINNET_ADDRESS,  // Zora
+  1: MAINNET_ADDRESS,        // Ethereum
+  10: MAINNET_ADDRESS,       // Optimism
+  56: MAINNET_ADDRESS,       // BSC
+  100: MAINNET_ADDRESS,      // Gnosis
+  130: MAINNET_ADDRESS,      // Unichain
+  137: MAINNET_ADDRESS,      // Polygon
+  146: MAINNET_ADDRESS,      // Sonic
+  196: MAINNET_ADDRESS,      // X Layer
+  252: MAINNET_ADDRESS,      // Fraxtal
+  480: MAINNET_ADDRESS,      // World Chain
+  1329: MAINNET_ADDRESS,     // Sei
+  1514: MAINNET_ADDRESS,     // Story
+  1868: MAINNET_ADDRESS,     // Soneium
+  5000: MAINNET_ADDRESS,     // Mantle
+  5330: MAINNET_ADDRESS,     // Superseed
+  8453: MAINNET_ADDRESS,     // Base
+  9745: MAINNET_ADDRESS,     // Plasma
+  33139: MAINNET_ADDRESS,    // ApeChain
+  34443: MAINNET_ADDRESS,    // Mode
+  42161: MAINNET_ADDRESS,    // Arbitrum
+  42220: MAINNET_ADDRESS,    // Celo
+  57073: MAINNET_ADDRESS,    // Ink
+  59144: MAINNET_ADDRESS,    // Linea
+  60808: MAINNET_ADDRESS,    // BOB
+  80094: MAINNET_ADDRESS,    // Berachain
+  81457: MAINNET_ADDRESS,    // Blast
+  534352: MAINNET_ADDRESS,   // Scroll
+  7777777: MAINNET_ADDRESS,  // Zora
   // Testnets
   11155111: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7', // Sepolia
   84532: '0x8102a8a8029F0dFFC3C5f6528a298437d5D2c2e7',    // Base Sepolia
@@ -107,7 +107,7 @@ const V3_CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
 interface SweepButtonProps {
   selectedChain: number | null;
   destinationAddress: string;
-  quote: QuoteV3Response | null;
+  quote: QuoteResponse | null;
   disabled?: boolean;
   onSweepComplete?: () => void;
   onSweepSuccess?: () => void;
@@ -138,7 +138,7 @@ export function SweepButton({
   const [walletInfo, setWalletInfo] = useState<WalletInfo>({ name: 'Unknown', compatibility: 'checking' });
 
   const chainInfo = selectedChain ? chainMeta[selectedChain] : null;
-  const contractAddress = selectedChain ? V3_CONTRACT_ADDRESSES[selectedChain] : null;
+  const contractAddress = selectedChain ? CONTRACT_ADDRESSES[selectedChain] : null;
 
   // Helper to truncate address for display
   const truncateAddress = (addr: string) => {

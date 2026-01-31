@@ -9,14 +9,14 @@ import { BalanceList } from '@/components/sweep/balance-list';
 import { DestinationForm } from '@/components/sweep/destination-form';
 import { SweepButton } from '@/components/sweep/sweep-button';
 import { FeeBreakdown } from '@/components/sweep/fee-breakdown';
-import { QuoteV3Response } from '@/services/api';
+import { QuoteResponse } from '@/services/api';
 
 export default function AppPage() {
   const { isConnected, address } = useAccount();
   const [selectedChain, setSelectedChain] = useState<number | null>(null);
   const [selectedBalance, setSelectedBalance] = useState<bigint>(0n);
   const [destinationAddress, setDestinationAddress] = useState<string>('');
-  const [quote, setQuote] = useState<QuoteV3Response | null>(null);
+  const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [balanceRefreshKey, setBalanceRefreshKey] = useState(0);
 
   const effectiveDestination = destinationAddress || address || '';

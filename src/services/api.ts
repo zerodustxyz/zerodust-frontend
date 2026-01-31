@@ -1,4 +1,4 @@
-// ZeroDust Backend API Service (V3)
+// ZeroDust Backend API Service
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/v1';
 
@@ -24,7 +24,7 @@ export interface QuoteRequest {
   destination: string;
 }
 
-export interface QuoteV3Response {
+export interface QuoteResponse {
   quoteId: string;
   version: number;
   userBalance: string;
@@ -51,7 +51,7 @@ export interface QuoteV3Response {
   validForSeconds: number;
 }
 
-// V3 EIP-712 types for signing (must match backend exactly!)
+// EIP-712 types for signing (must match backend exactly!)
 export const SWEEP_INTENT_TYPES = {
   SweepIntent: [
     { name: 'mode', type: 'uint8' },
@@ -146,44 +146,44 @@ export const api = {
   },
 
   /**
-   * Get a V3 quote for sweeping a wallet (same-chain sweep)
+   * Get a quote for sweeping a wallet
    */
-  async getQuote(request: QuoteRequest): Promise<QuoteV3Response> {
+  async getQuote(request: QuoteRequest): Promise<QuoteResponse> {
     const params = new URLSearchParams({
       fromChainId: request.fromChainId.toString(),
       toChainId: request.toChainId.toString(),
       userAddress: request.userAddress,
       destination: request.destination,
     });
-    return fetchApi<QuoteV3Response>(`/v3/quote?${params.toString()}`);
+    return fetchApi<QuoteResponse>(`/quote?${params.toString()}`);
   },
 
   /**
-   * Submit a signed sweep request (V3 one-step - requires EIP-7702 auth)
+   * Submit a signed sweep request (one-step - requires EIP-7702 auth)
    */
   async submitSweep(request: SweepRequest): Promise<SweepResponse> {
-    return fetchApi<SweepResponse>('/v3/sweep', {
+    return fetchApi<SweepResponse>('/sweep', {
       method: 'POST',
       body: JSON.stringify(request),
     });
   },
 
   /**
-   * Submit a signed sweep request (V3 two-step - user already registered)
+   * Submit a signed sweep request (two-step - user already registered)
    * This is for the two-step flow where user's EOA is already delegated to the contract
    */
   async submitSweepTwoStep(request: SweepTwoStepRequest): Promise<SweepResponse> {
-    return fetchApi<SweepResponse>('/v3/sweep/two-step', {
+    return fetchApi<SweepResponse>('/sweep/two-step', {
       method: 'POST',
       body: JSON.stringify(request),
     });
   },
 
   /**
-   * Get the status of a sweep (V3)
+   * Get the status of a sweep
    */
   async getSweepStatus(sweepId: string): Promise<SweepStatusResponse> {
-    return fetchApi<SweepStatusResponse>(`/v3/sweep/${sweepId}`);
+    return fetchApi<SweepStatusResponse>(`/sweep/${sweepId}`);
   },
 
   /**
@@ -248,8 +248,8 @@ export const api = {
   },
 
   /**
-   * Build EIP-712 domain for V3 signing
-   * NOTE: V3 uses the USER's address as verifyingContract, not the contract address
+   * Build EIP-712 domain for signing
+   * NOTE: Uses the USER's address as verifyingContract (EIP-7702), not the contract address
    */
   buildEIP712Domain(chainId: number, userAddress: string) {
     return {
@@ -261,10 +261,10 @@ export const api = {
   },
 
   /**
-   * Build the message to sign for V3 sweep
+   * Build the message to sign for sweep
    * Field order must match SWEEP_INTENT_TYPES exactly!
    */
-  buildSweepIntentMessage(quote: QuoteV3Response, userAddress: string) {
+  buildSweepIntentMessage(quote: QuoteResponse, userAddress: string) {
     return {
       mode: quote.intent.mode,
       user: userAddress as `0x${string}`,

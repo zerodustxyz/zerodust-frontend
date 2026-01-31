@@ -6,7 +6,7 @@ import { formatEther, parseEther } from 'viem';
 import { motion } from 'framer-motion';
 import { Loader2, AlertCircle, ChevronDown, ChevronUp, Clock, Info } from 'lucide-react';
 import { chainMeta } from '@/config/wagmi';
-import { api, QuoteV3Response, ApiError } from '@/services/api';
+import { api, QuoteResponse, ApiError } from '@/services/api';
 import { priceService } from '@/services/prices';
 
 export type FeeWarningType = 'none' | 'amount_too_low' | 'high_fee';
@@ -16,13 +16,13 @@ interface FeeBreakdownProps {
   destinationChain?: number | null;
   balance: bigint;
   destinationAddress: string;
-  onQuoteChange?: (quote: QuoteV3Response | null) => void;
+  onQuoteChange?: (quote: QuoteResponse | null) => void;
   onWarningChange?: (warning: FeeWarningType) => void;
   isPreview?: boolean;
 }
 
 // Fee constants for service fee calculation
-const SERVICE_FEE_PERCENT = 0.05; // 5%
+const SERVICE_FEE_PERCENT = 0.01; // 1%
 const MIN_SERVICE_FEE_USD = 0.05; // $0.05
 const MAX_SERVICE_FEE_USD = 0.50; // $0.50
 
@@ -38,7 +38,7 @@ export function FeeBreakdown({
   // Use destination chain if provided, otherwise same-chain sweep
   const toChainId = destinationChain ?? selectedChain;
   const { address, isConnected } = useAccount();
-  const [quote, setQuote] = useState<QuoteV3Response | null>(null);
+  const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -66,7 +66,7 @@ export function FeeBreakdown({
 
     const amountUsd = amountEth * tokenPriceUsd;
 
-    // Calculate 5% of value in USD
+    // Calculate 1% of value in USD
     let serviceFeeUsd = amountUsd * SERVICE_FEE_PERCENT;
 
     // Apply min/max caps
@@ -441,7 +441,7 @@ export function FeeBreakdown({
           <div className="flex items-center justify-between">
             <div>
               <span className="text-zinc-500">Service fee ({serviceFeePercentage}%)</span>
-              <span className="block text-xs text-zinc-400">5% of amount (min $0.05, max $0.50)</span>
+              <span className="block text-xs text-zinc-400">1% of amount (min $0.05, max $0.50)</span>
             </div>
             <div className="text-right">
               <span className="font-mono text-zinc-400">
