@@ -26,7 +26,7 @@ import { DestinationForm } from '@/components/sweep/destination-form';
 import { DestinationChainSelector } from '@/components/sweep/destination-chain-selector';
 import { SweepButton } from '@/components/sweep/sweep-button';
 import { FeeBreakdown, FeeWarningType } from '@/components/sweep/fee-breakdown';
-import { QuoteV3Response } from '@/services/api';
+import { QuoteResponse } from '@/services/api';
 import { chainMeta, testnetChainIds, mainnetChainIds } from '@/config/wagmi';
 import { priceService } from '@/services/prices';
 import { ChainIcon } from '@/components/ui/chain-icon';
@@ -100,7 +100,7 @@ export default function Home() {
   const [selectedBalance, setSelectedBalance] = useState<bigint>(0n);
   const [manualAmount, setManualAmount] = useState<string>('');
   const [destinationAddress, setDestinationAddress] = useState<string>('');
-  const [quote, setQuote] = useState<QuoteV3Response | null>(null);
+  const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [tokenPrice, setTokenPrice] = useState<number>(0);
   const [feeWarning, setFeeWarning] = useState<FeeWarningType>('none');
   const [confirmedHighFee, setConfirmedHighFee] = useState(false);
