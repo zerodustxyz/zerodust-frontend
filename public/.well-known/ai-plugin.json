@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "ZeroDust",
+  "name_for_model": "zerodust",
+  "description_for_human": "Sweep native gas tokens to exactly zero across 25+ EVM chains.",
+  "description_for_model": "ZeroDust sweeps 100% of native gas tokens (ETH, BNB, POL, etc.) from any supported EVM chain, leaving exactly zero balance. Funds are sent to any address on the same or a different chain. Use this to check balances across chains, get sweep quotes, and execute sweeps. Supports Ethereum, Arbitrum, Base, Optimism, Polygon, BSC, and 20+ more EVM chains.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://zerodust.xyz/openapi.json"
+  },
+  "logo_url": "https://zerodust.xyz/logo.png",
+  "contact_email": "support@zerodust.xyz",
+  "legal_info_url": "https://zerodust.xyz/terms"
+}

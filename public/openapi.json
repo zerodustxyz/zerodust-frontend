@@ -1,0 +1,756 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ZeroDust API",
+    "description": "Sweep native gas tokens to exactly zero across 25+ EVM chains. ZeroDust sweeps 100% of native gas tokens (ETH, BNB, POL, etc.) from any supported EVM chain, leaving exactly zero balance.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "ZeroDust",
+      "url": "https://zerodust.xyz"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.zerodust.xyz",
+      "description": "Production (mainnet)"
+    }
+  ],
+  "security": [
+    {},
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/chains": {
+      "get": {
+        "operationId": "getChains",
+        "summary": "List supported chains",
+        "description": "Returns all supported EVM chains with their configuration including chain ID, native token, minimum balance for sweeps, and contract addresses.",
+        "responses": {
+          "200": {
+            "description": "List of supported chains",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "chains": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Chain"
+                      }
+                    }
+                  },
+                  "required": ["chains"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/balances/{address}": {
+      "get": {
+        "operationId": "getBalances",
+        "summary": "Get balances across all chains",
+        "description": "Returns native token balances across all supported chains for the given address, including whether each balance is large enough to sweep.",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Ethereum address (0x...)",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balances for the address",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalancesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid address",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quote": {
+      "get": {
+        "operationId": "getQuote",
+        "summary": "Get a sweep quote",
+        "description": "Returns a quote for sweeping native tokens from one chain to another. The quote includes estimated receive amount, fees, and a deadline. Quotes are valid for 60 seconds.",
+        "parameters": [
+          {
+            "name": "fromChainId",
+            "in": "query",
+            "required": true,
+            "description": "Source chain ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "toChainId",
+            "in": "query",
+            "required": true,
+            "description": "Destination chain ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "userAddress",
+            "in": "query",
+            "required": true,
+            "description": "User's Ethereum address",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$"
+            }
+          },
+          {
+            "name": "destination",
+            "in": "query",
+            "required": true,
+            "description": "Destination Ethereum address",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sweep quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/authorization": {
+      "post": {
+        "operationId": "createAuthorization",
+        "summary": "Create EIP-712 typed data for signing",
+        "description": "Returns the EIP-712 typed data that the user must sign to authorize the sweep, plus the contract address for EIP-7702 authorization.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quoteId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Quote ID from getQuote"
+                  }
+                },
+                "required": ["quoteId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authorization data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Quote not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sweep": {
+      "post": {
+        "operationId": "submitSweep",
+        "summary": "Submit a signed sweep",
+        "description": "Submits the signed sweep intent and EIP-7702 authorization. The relayer will execute the sweep atomically, transferring all native tokens from the source chain to the destination.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SweepRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sweep submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SweepResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sweep/{sweepId}": {
+      "get": {
+        "operationId": "getSweepStatus",
+        "summary": "Get sweep status",
+        "description": "Returns the current status of a sweep including transaction hash when completed.",
+        "parameters": [
+          {
+            "name": "sweepId",
+            "in": "path",
+            "required": true,
+            "description": "Sweep ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sweep status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SweepStatusResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sweep not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sweeps/{address}": {
+      "get": {
+        "operationId": "listSweeps",
+        "summary": "List sweeps for an address",
+        "description": "Returns a paginated list of sweeps for the given address.",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Ethereum address",
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[a-fA-F0-9]{40}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Max results (default: 20, max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Pagination offset",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter by sweep status",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "processing", "completed", "failed"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of sweeps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SweepsListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid address",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Optional API key for higher rate limits"
+      }
+    },
+    "schemas": {
+      "Chain": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "EVM chain ID",
+            "example": 8453
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable chain name",
+            "example": "Base"
+          },
+          "nativeToken": {
+            "type": "string",
+            "description": "Native token symbol",
+            "example": "ETH"
+          },
+          "nativeTokenDecimals": {
+            "type": "integer",
+            "description": "Native token decimals",
+            "example": 18
+          },
+          "minBalance": {
+            "type": "string",
+            "description": "Minimum balance required to sweep (in wei)",
+            "example": "10000000000000"
+          },
+          "contractAddress": {
+            "type": "string",
+            "description": "ZeroDust contract address on this chain",
+            "example": "0x3732398281d0606aCB7EC1D490dFB0591BE4c4f2"
+          },
+          "explorerUrl": {
+            "type": "string",
+            "description": "Block explorer URL",
+            "example": "https://basescan.org"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the chain is currently active"
+          }
+        },
+        "required": ["chainId", "name", "nativeToken", "nativeTokenDecimals", "minBalance", "contractAddress", "explorerUrl", "enabled"]
+      },
+      "ChainBalance": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "example": 42161
+          },
+          "name": {
+            "type": "string",
+            "example": "Arbitrum"
+          },
+          "nativeToken": {
+            "type": "string",
+            "example": "ETH"
+          },
+          "balance": {
+            "type": "string",
+            "description": "Balance in wei",
+            "example": "800000000000000"
+          },
+          "balanceFormatted": {
+            "type": "string",
+            "description": "Human-readable balance",
+            "example": "0.0008"
+          },
+          "canSweep": {
+            "type": "boolean",
+            "description": "Whether the balance is above the minimum for sweeping"
+          },
+          "minBalance": {
+            "type": "string",
+            "description": "Minimum balance required to sweep (in wei)"
+          }
+        },
+        "required": ["chainId", "name", "nativeToken", "balance", "balanceFormatted", "canSweep", "minBalance"]
+      },
+      "BalancesResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "chains": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChainBalance"
+            }
+          }
+        },
+        "required": ["address", "chains"]
+      },
+      "QuoteFees": {
+        "type": "object",
+        "properties": {
+          "overheadGasUnits": {
+            "type": "string"
+          },
+          "protocolFeeGasUnits": {
+            "type": "string"
+          },
+          "extraFeeWei": {
+            "type": "string"
+          },
+          "reimbGasPriceCapWei": {
+            "type": "string"
+          },
+          "maxTotalFeeWei": {
+            "type": "string",
+            "description": "Maximum total fee in wei"
+          },
+          "revokeGasUnits": {
+            "type": "string"
+          }
+        },
+        "required": ["overheadGasUnits", "protocolFeeGasUnits", "extraFeeWei", "reimbGasPriceCapWei", "maxTotalFeeWei", "revokeGasUnits"]
+      },
+      "SweepIntent": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "integer"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "destinationChainId": {
+            "type": "string"
+          },
+          "callTarget": {
+            "type": "string"
+          },
+          "routeHash": {
+            "type": "string"
+          },
+          "minReceive": {
+            "type": "string"
+          }
+        },
+        "required": ["mode", "destination", "destinationChainId", "callTarget", "routeHash", "minReceive"]
+      },
+      "QuoteResponse": {
+        "type": "object",
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "userBalance": {
+            "type": "string",
+            "description": "User's current balance in wei"
+          },
+          "estimatedReceive": {
+            "type": "string",
+            "description": "Estimated amount to receive in wei"
+          },
+          "mode": {
+            "type": "integer"
+          },
+          "fees": {
+            "$ref": "#/components/schemas/QuoteFees"
+          },
+          "autoRevoke": {
+            "type": "boolean",
+            "description": "Whether EIP-7702 delegation is automatically revoked"
+          },
+          "intent": {
+            "$ref": "#/components/schemas/SweepIntent"
+          },
+          "deadline": {
+            "type": "integer",
+            "description": "Unix timestamp deadline"
+          },
+          "nonce": {
+            "type": "integer"
+          },
+          "authNonce": {
+            "type": "integer"
+          },
+          "validForSeconds": {
+            "type": "integer",
+            "description": "Seconds until the quote expires"
+          }
+        },
+        "required": ["quoteId", "version", "userBalance", "estimatedReceive", "mode", "fees", "autoRevoke", "intent", "deadline", "nonce", "authNonce", "validForSeconds"]
+      },
+      "AuthorizationResponse": {
+        "type": "object",
+        "properties": {
+          "sweepType": {
+            "type": "string",
+            "enum": ["same-chain", "cross-chain"]
+          },
+          "typedData": {
+            "type": "object",
+            "description": "EIP-712 typed data to sign"
+          },
+          "contractAddress": {
+            "type": "string",
+            "description": "Contract address for EIP-7702 authorization"
+          },
+          "version": {
+            "type": "integer"
+          }
+        },
+        "required": ["sweepType", "typedData", "contractAddress", "version"]
+      },
+      "EIP7702Authorization": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer"
+          },
+          "contractAddress": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "integer"
+          },
+          "yParity": {
+            "type": "integer",
+            "enum": [0, 1]
+          },
+          "r": {
+            "type": "string"
+          },
+          "s": {
+            "type": "string"
+          }
+        },
+        "required": ["chainId", "contractAddress", "nonce", "yParity", "r", "s"]
+      },
+      "SweepRequest": {
+        "type": "object",
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "signature": {
+            "type": "string",
+            "description": "EIP-712 signature"
+          },
+          "eip7702Authorization": {
+            "$ref": "#/components/schemas/EIP7702Authorization"
+          },
+          "revokeAuthorization": {
+            "$ref": "#/components/schemas/EIP7702Authorization",
+            "description": "Optional revoke authorization"
+          }
+        },
+        "required": ["quoteId", "signature", "eip7702Authorization"]
+      },
+      "SweepResponse": {
+        "type": "object",
+        "properties": {
+          "sweepId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "processing", "completed", "failed"]
+          },
+          "sweepType": {
+            "type": "string",
+            "enum": ["same-chain", "cross-chain"]
+          },
+          "isExisting": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer"
+          }
+        },
+        "required": ["sweepId", "status", "sweepType", "isExisting", "version"]
+      },
+      "SweepStatusResponse": {
+        "type": "object",
+        "properties": {
+          "sweepId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "processing", "completed", "failed"]
+          },
+          "sweepType": {
+            "type": "string",
+            "enum": ["same-chain", "cross-chain"]
+          },
+          "mode": {
+            "type": "integer"
+          },
+          "txHash": {
+            "type": "string",
+            "description": "Transaction hash (when completed)"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "fromChainId": {
+            "type": "integer"
+          },
+          "toChainId": {
+            "type": "integer"
+          },
+          "amountSent": {
+            "type": "string",
+            "description": "Amount sent in wei"
+          },
+          "bridgeTrackingUrl": {
+            "type": "string",
+            "description": "URL to track cross-chain bridge (if applicable)"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revokeStatus": {
+            "type": "string",
+            "description": "Status of EIP-7702 delegation revocation"
+          }
+        },
+        "required": ["sweepId", "status", "sweepType", "mode", "fromChainId", "toChainId", "version", "createdAt", "updatedAt"]
+      },
+      "SweepsListResponse": {
+        "type": "object",
+        "properties": {
+          "sweeps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SweepStatusResponse"
+            }
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": ["sweeps", "total"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code",
+            "enum": ["BALANCE_TOO_LOW", "QUOTE_EXPIRED", "INVALID_ADDRESS", "CHAIN_NOT_SUPPORTED", "INVALID_SIGNATURE", "QUOTE_NOT_FOUND", "SERVICE_UNAVAILABLE"]
+          }
+        },
+        "required": ["error", "code"]
+      }
+    }
+  }
+}
