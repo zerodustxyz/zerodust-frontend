@@ -1,6 +1,9 @@
 // ZeroDust Backend API Service
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/v1';
+// Use local proxy in development to avoid CORS issues
+const API_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? '/api/proxy'
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
 
 export interface ChainBalance {
   chainId: number;

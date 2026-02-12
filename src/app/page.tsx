@@ -94,7 +94,7 @@ const getDisplayChains = (mode: NetworkMode) => {
 
 export default function Home() {
   const { isConnected, address } = useAccount();
-  const [networkMode, setNetworkMode] = useState<NetworkMode>('testnet');
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
   const [selectedChain, setSelectedChain] = useState<number | null>(null);
   const [destinationChain, setDestinationChain] = useState<number | null>(null);
   const [selectedBalance, setSelectedBalance] = useState<bigint>(0n);

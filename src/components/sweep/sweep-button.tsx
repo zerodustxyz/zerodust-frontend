@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Check, ExternalLink, AlertTriangle, Info, Sparkles, ArrowRight } from 'lucide-react';
 import { useWalletClient, useAccount, useSwitchChain, usePublicClient } from 'wagmi';
+import { BrowserProvider } from 'ethers';
 import { chainMeta } from '@/config/wagmi';
 import { api, QuoteResponse, ApiError, SWEEP_INTENT_TYPES } from '@/services/api';
 import { ChainIcon } from '@/components/ui/chain-icon';
@@ -23,9 +24,13 @@ const KNOWN_WALLETS: Record<string, Omit<WalletInfo, 'name'>> = {
     compatibility: 'compatible',
     reason: 'Rabby supports EIP-7702 via wallet_signAuthorization',
   },
-  'metamask': {
+  'ambire': {
     compatibility: 'unknown',
-    reason: 'MetaMask EIP-7702 support is experimental. It may or may not work.',
+    reason: 'Ambire EIP-7702 support is being tested. It may or may not work.',
+  },
+  'metamask': {
+    compatibility: 'compatible',
+    reason: 'MetaMask (modified) supports EIP-7702 via wallet_signAuthorization',
   },
   'coinbase': {
     compatibility: 'unknown',
@@ -46,6 +51,9 @@ function detectWallet(): WalletInfo {
 
   if (provider.isRabby) {
     return { name: 'Rabby', ...KNOWN_WALLETS['rabby'] };
+  }
+  if (provider.isAmbire) {
+    return { name: 'Ambire', ...KNOWN_WALLETS['ambire'] };
   }
   if (provider.isMetaMask && !provider.isRabby) {
     return { name: 'MetaMask', ...KNOWN_WALLETS['metamask'] };
@@ -238,8 +246,8 @@ export function SweepButton({
   const supportsBatchAuth = async (): Promise<boolean> => {
     if (typeof window === 'undefined' || !window.ethereum) return false;
     const provider = window.ethereum as any;
-    // Rabby fork supports batch signing
-    return provider.isRabby === true;
+    // Rabby fork and modified MetaMask support batch signing
+    return provider.isRabby === true || provider.isMetaMask === true;
   };
 
   const handleSweep = async () => {
@@ -303,12 +311,39 @@ export function SweepButton({
       const domain = api.buildEIP712Domain(selectedChain, address);
       const message = api.buildSweepIntentMessage(quote, address);
 
-      const sweepSignature = await walletClient.signTypedData({
-        domain,
-        types: SWEEP_INTENT_TYPES,
-        primaryType: 'SweepIntent',
-        message,
-      });
+      // Viem 2.44+ blocks using internal accounts as verifyingContract, but this is
+      // required for EIP-7702 where the user's EOA IS the contract after delegation.
+      // We use ethers.js directly to bypass viem's interception entirely.
+      const ethersProvider = new BrowserProvider((window as any).ethereum);
+      const signer = await ethersProvider.getSigner();
+
+      // ethers.js signTypedData doesn't have viem's safety check
+      // Spread types to convert from readonly to mutable for ethers.js compatibility
+      const sweepSignature = await signer.signTypedData(
+        {
+          name: domain.name,
+          version: domain.version,
+          chainId: domain.chainId,
+          verifyingContract: domain.verifyingContract,
+        },
+        { SweepIntent: [...SWEEP_INTENT_TYPES.SweepIntent] },
+        {
+          mode: message.mode,
+          user: message.user,
+          destination: message.destination,
+          destinationChainId: message.destinationChainId,
+          callTarget: message.callTarget,
+          routeHash: message.routeHash,
+          minReceive: message.minReceive,
+          maxTotalFeeWei: message.maxTotalFeeWei,
+          overheadGasUnits: message.overheadGasUnits,
+          protocolFeeGasUnits: message.protocolFeeGasUnits,
+          extraFeeWei: message.extraFeeWei,
+          reimbGasPriceCapWei: message.reimbGasPriceCapWei,
+          deadline: message.deadline,
+          nonce: message.nonce,
+        }
+      );
 
       setStatus('submitting');
 
@@ -355,10 +390,22 @@ export function SweepButton({
         throw new Error(finalStatus.error || 'Sweep failed');
       }
     } catch (err: unknown) {
-      console.error('Sweep error:', err);
+      console.error('Sweep error (full):', err);
       setStatus('error');
 
-      const errorMessage = err instanceof Error ? err.message : String(err);
+      // Extract error message from various error formats (wallet errors can be nested)
+      let errorMessage = 'Something went wrong';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        console.error('Error message:', err.message);
+        console.error('Error stack:', err.stack);
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err && typeof err === 'object') {
+        const errObj = err as Record<string, unknown>;
+        errorMessage = (errObj.message || errObj.error || errObj.reason || JSON.stringify(err)) as string;
+        console.error('Error object:', JSON.stringify(err, null, 2));
+      }
 
       if (err instanceof ApiError) {
         if (err.code === 'EIP7702_INVALID_SIGNATURE') {
@@ -366,14 +413,16 @@ export function SweepButton({
         } else {
           setError(err.message);
         }
-      } else if (errorMessage.includes('User rejected') || errorMessage.includes('denied')) {
+      } else if (errorMessage.includes('User rejected') || errorMessage.includes('denied') || errorMessage.includes('user rejected')) {
         setError('Signature was rejected in wallet');
-      } else if (errorMessage.includes('eth_sign') || errorMessage.includes('not support')) {
+      } else if (errorMessage.includes('wallet_signAuthorization') && errorMessage.includes('not support')) {
+        // Only trigger wallet incompatibility for EIP-7702 auth method issues
         setError(`Your wallet (${walletInfo.name}) does not support EIP-7702 signing. Please try a different wallet.`);
-        setWalletInfo(prev => ({ ...prev, compatibility: 'incompatible', reason: 'eth_sign is blocked or unsupported' }));
+        setWalletInfo(prev => ({ ...prev, compatibility: 'incompatible', reason: 'wallet_signAuthorization not supported' }));
       } else if (errorMessage.includes('Method not found') || errorMessage.includes('not implemented')) {
         setError('Your wallet does not support the required signing method for EIP-7702.');
       } else {
+        // Show actual error for debugging
         setError(errorMessage || 'Something went wrong');
       }
     }

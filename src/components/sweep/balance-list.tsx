@@ -26,7 +26,7 @@ interface ChainBalance {
   error: string | null;
 }
 
-export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange, networkMode = 'testnet', refreshKey }: BalanceListProps) {
+export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange, networkMode = 'mainnet', refreshKey }: BalanceListProps) {
   const { address, isConnected } = useAccount();
   const [balances, setBalances] = useState<ChainBalance[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -50,6 +50,7 @@ export function BalanceList({ selectedChain, onSelectionChange, onBalanceChange,
   }, [isConnected, networkMode]);
 
   const fetchBalances = async () => {
+    console.log('[BalanceList] fetchBalances called, address:', address, 'networkMode:', networkMode);
     if (!address) return;
 
     setIsRefreshing(true);

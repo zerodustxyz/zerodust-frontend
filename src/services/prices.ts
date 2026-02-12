@@ -1,6 +1,9 @@
 // ZeroDust Price Service - Fetches token prices from backend (CoinGecko)
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/v1';
+// Use local proxy in development to avoid CORS issues
+const API_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? '/api/proxy'
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
 
 // Map testnet token symbols to their mainnet equivalents for price lookups (uppercase keys)
 const TESTNET_TO_MAINNET: Record<string, string> = {
